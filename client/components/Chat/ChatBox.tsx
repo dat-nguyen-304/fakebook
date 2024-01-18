@@ -34,12 +34,12 @@ const ChatBox: React.FC<ChatBoxProps> = () => {
                         <Image src="/avatar.jpg" alt="" width={28} height={28} className="rounded-full" />
                     </div>
                     <div className="bg-[#303030] rounded-2xl px-[12px] py-[8px]">
-                        <p className="text-[#e0e2e6] font-[15px]">Dit me may ke. fuck you</p>
+                        <p className="text-[#e0e2e6] font-[15px]">Van minh</p>
                     </div>
                 </div>
                 <div className="my-[8px] flex flex-row-reverse">
                     <div className="bg-[#0084ff] rounded-2xl px-[12px] py-[8px]">
-                        <p className="text-[#e4f2ff] font-[15px]">Dit me may ke. fuck you</p>
+                        <p className="text-[#e4f2ff] font-[15px]">Van minh</p>
                     </div>
                 </div>
                 <div className="my-[8px] flex items-end gap-[4px]">
@@ -47,12 +47,12 @@ const ChatBox: React.FC<ChatBoxProps> = () => {
                         <Image src="/avatar.jpg" alt="" width={28} height={28} className="rounded-full" />
                     </div>
                     <div className="bg-[#303030] rounded-2xl px-[12px] py-[8px]">
-                        <p className="text-[#e0e2e6] font-[15px]">Dit me may ke. fuck you</p>
+                        <p className="text-[#e0e2e6] font-[15px]">Van minh</p>
                     </div>
                 </div>
                 <div className="my-[8px] flex flex-row-reverse">
                     <div className="bg-[#0084ff] rounded-2xl px-[12px] py-[8px]">
-                        <p className="text-[#e4f2ff] font-[15px]">Dit me may ke. fuck you</p>
+                        <p className="text-[#e4f2ff] font-[15px]">Van minh</p>
                     </div>
                 </div>
                 <div className="my-[8px] flex items-end gap-[4px]">
@@ -60,12 +60,12 @@ const ChatBox: React.FC<ChatBoxProps> = () => {
                         <Image src="/avatar.jpg" alt="" width={28} height={28} className="rounded-full" />
                     </div>
                     <div className="bg-[#303030] rounded-2xl px-[12px] py-[8px]">
-                        <p className="text-[#e0e2e6] font-[15px]">Dit me may ke. fuck you</p>
+                        <p className="text-[#e0e2e6] font-[15px]">Van minh</p>
                     </div>
                 </div>
                 <div className="my-[8px] flex flex-row-reverse">
                     <div className="bg-[#0084ff] rounded-2xl px-[12px] py-[8px]">
-                        <p className="text-[#e4f2ff] font-[15px]">Dit me may ke. fuck you</p>
+                        <p className="text-[#e4f2ff] font-[15px]">Van minh</p>
                     </div>
                 </div>
                 <div className="my-[8px] flex items-end gap-[4px]">
@@ -73,12 +73,12 @@ const ChatBox: React.FC<ChatBoxProps> = () => {
                         <Image src="/avatar.jpg" alt="" width={28} height={28} className="rounded-full" />
                     </div>
                     <div className="bg-[#303030] rounded-2xl px-[12px] py-[8px]">
-                        <p className="text-[#e0e2e6] font-[15px]">Dit me may ke. fuck you</p>
+                        <p className="text-[#e0e2e6] font-[15px]">Van minh</p>
                     </div>
                 </div>
                 <div className="my-[8px] flex flex-row-reverse">
                     <div className="bg-[#0084ff] rounded-2xl px-[12px] py-[8px]">
-                        <p className="text-[#e4f2ff] font-[15px]">Dit me may ke. fuck you</p>
+                        <p className="text-[#e4f2ff] font-[15px]">Van minh</p>
                     </div>
                 </div>
                 <div className="my-[8px] flex items-end gap-[4px]">
@@ -86,12 +86,12 @@ const ChatBox: React.FC<ChatBoxProps> = () => {
                         <Image src="/avatar.jpg" alt="" width={28} height={28} className="rounded-full" />
                     </div>
                     <div className="bg-[#303030] rounded-2xl px-[12px] py-[8px]">
-                        <p className="text-[#e0e2e6] font-[15px]">Dit me may ke. fuck you</p>
+                        <p className="text-[#e0e2e6] font-[15px]">Van minh</p>
                     </div>
                 </div>
                 <div className="my-[8px] flex flex-row-reverse">
                     <div className="bg-[#0084ff] rounded-2xl px-[12px] py-[8px]">
-                        <p className="text-[#e4f2ff] font-[15px]">Dit me may ke. fuck you</p>
+                        <p className="text-[#e4f2ff] font-[15px]">Van minh</p>
                     </div>
                 </div>
                 <div className="my-[8px] flex items-end gap-[4px]">
@@ -99,12 +99,12 @@ const ChatBox: React.FC<ChatBoxProps> = () => {
                         <Image src="/avatar.jpg" alt="" width={28} height={28} className="rounded-full" />
                     </div>
                     <div className="bg-[#303030] rounded-2xl px-[12px] py-[8px]">
-                        <p className="text-[#e0e2e6] font-[15px]">Dit me may ke. fuck you</p>
+                        <p className="text-[#e0e2e6] font-[15px]">Van minh</p>
                     </div>
                 </div>
                 <div className="my-[8px] flex flex-row-reverse">
                     <div className="bg-[#0084ff] rounded-2xl px-[12px] py-[8px]">
-                        <p className="text-[#e4f2ff] font-[15px]">Dit me may ke. fuck you</p>
+                        <p className="text-[#e4f2ff] font-[15px]">Van minh</p>
                     </div>
                 </div>
                 <div className="my-[8px] flex items-end gap-[4px]">
@@ -112,12 +112,12 @@ const ChatBox: React.FC<ChatBoxProps> = () => {
                         <Image src="/avatar.jpg" alt="" width={28} height={28} className="rounded-full" />
                     </div>
                     <div className="bg-[#303030] rounded-2xl px-[12px] py-[8px]">
-                        <p className="text-[#e0e2e6] font-[15px]">Dit me may ke. fuck you</p>
+                        <p className="text-[#e0e2e6] font-[15px]">Van minh</p>
                     </div>
                 </div>
                 <div className="my-[8px] flex flex-row-reverse">
                     <div className="bg-[#0084ff] rounded-2xl px-[12px] py-[8px]">
-                        <p className="text-[#e4f2ff] font-[15px]">Dit me may ke. fuck you</p>
+                        <p className="text-[#e4f2ff] font-[15px]">Van minh</p>
                     </div>
                 </div>
             </div>
