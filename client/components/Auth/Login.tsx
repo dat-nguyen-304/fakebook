@@ -1,38 +1,30 @@
 'use client';
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
-import axios from 'axios';
+import { ChangeEvent, FormEvent, useState } from 'react';
+import { AxiosResponse } from 'axios';
 import Image from 'next/image';
+import { authApi } from '@/api-client/auth-api';
+import { toast } from 'react-toastify';
 
-export default function Register() {
+interface LoginProps {
+    handleToken: (response: AxiosResponse<any, any> | undefined) => Promise<void>;
+}
+
+const Login: React.FC<LoginProps> = ({ handleToken }) => {
     const [values, setValues] = useState({
         username: '',
         password: ''
     });
-    const router = useRouter();
-
-    useEffect(() => {
-        /*if (localStorage.getItem('chat-app-user')) {
-            router.push('/');
-        }*/
-    }, []);
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        if (handleValidation()) {
+        try {
             const { password, username } = values;
+            const response = await authApi.login({ username, password });
+            handleToken(response);
+        } catch (error: any) {
+            if (error.message[0]) toast.error(error.message[0]);
         }
-    };
-
-    const handleValidation = () => {
-        const { password, username } = values;
-        if (username === '' || password === '') {
-            console.log('Username and password are required');
-            return false;
-        }
-        return true;
     };
 
     const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -48,6 +40,7 @@ export default function Register() {
 
             <div className="p-4 flex items-center gap-4">
                 <input
+                    required
                     className="w-[200px] h-[36px] bg-transparent py-[4px] px-[8px] border-2 border-[#b0b3b8] rounded-md text-[#e4e6eb] text-[13px] focus:border-[#4e0eff] focus:outline-none"
                     type="text"
                     placeholder="Username"
@@ -55,6 +48,7 @@ export default function Register() {
                     onChange={e => handleChange(e)}
                 />
                 <input
+                    required
                     className="w-[200px] h-[36px] bg-transparent py-[4px] px-[8px] border-2 border-[#b0b3b8] rounded-md text-[#e4e6eb] text-[13px] focus:border-[#4e0eff] focus:outline-none"
                     type="password"
                     placeholder="Password"
@@ -70,4 +64,6 @@ export default function Register() {
             </div>
         </form>
     );
-}
+};
+
+export default Login;

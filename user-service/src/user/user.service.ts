@@ -1,16 +1,6 @@
-import {
-    CreateUserDto,
-    LoginDto,
-    PaginationDto,
-    UpdateUserDto,
-    User,
-    UserResponse,
-    Users,
-    UsersResponse
-} from '@/proto/auth';
-import { BadRequestException, Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
+import { CreateUserDto, LoginDto, UpdateUserDto, UserResponse } from '@/proto/auth';
+import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { Observable, Subject } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import neo4j, { Driver } from 'neo4j-driver';
 import * as argon from 'argon2';
@@ -23,31 +13,46 @@ export class UserService {
         this.driver = neo4j.driver('bolt://localhost:7687', neo4j.auth.basic('neo4j', '12345678'));
     }
 
+    async findByUsername(username: string) {
+        const session = this.driver.session();
+        try {
+            const result = await session.run('MATCH (user:USER {username : $username}) RETURN user;', {
+                username
+            });
+            session.close();
+            if (result.records.length === 0) return null;
+            return result.records[0].get(0).properties;
+        } catch (error) {
+            console.log({ error });
+            session.close();
+        }
+    }
+
     async create(createUserDto: CreateUserDto): Promise<UserResponse> {
         const session = this.driver.session();
         try {
-            const user = await session.run('MATCH (user:USER {username : $username}) RETURN user;', {
-                username: createUserDto.username
-            });
-            if (user.records.length !== 0) {
-                session.close();
+            const checkUser = await this.findByUsername(createUserDto.username);
+            if (checkUser) {
                 return {
                     user: null,
                     status: {
-                        message: 'username is already exist',
+                        message: 'Username already exist',
                         success: false
                     }
                 };
             } else {
                 const addedResult = await session.run(
-                    'CREATE (user: USER {id: $uuid, username: $username, fullName: $fullName, password: $password, createdDate: timestamp(), updatedDate: timestamp()}) RETURN user;',
+                    'CREATE (user: USER {id: $uuid, username: $username, fullName: $fullName, password: $password, gender: $gender, createdDate: timestamp(), updatedDate: timestamp()}) RETURN user;',
                     {
                         uuid: randomUUID(),
                         username: createUserDto.username,
                         fullName: createUserDto.fullName,
+                        gender: createUserDto.gender,
                         password: await argon.hash(createUserDto.password)
                     }
                 );
+                console.log(createUserDto);
+                session.close();
                 let newUser = addedResult.records[0].get(0).properties;
                 delete newUser.password;
                 return {
@@ -64,10 +69,45 @@ export class UserService {
         }
     }
 
-    login(loginDto: LoginDto) {
+    async login(loginDto: LoginDto) {
+        const session = this.driver.session();
+        try {
+            const user = await this.findByUsername(loginDto.username);
+            if (!user) {
+                return {
+                    user: null,
+                    status: {
+                        success: false,
+                        message: 'Username does not exist'
+                    }
+                };
+            } else {
+                const pwMatches = await argon.verify(user.password, loginDto.password);
+                if (!pwMatches) {
+                    return {
+                        user: null,
+                        status: {
+                            success: false,
+                            message: 'Password is incorrect'
+                        }
+                    };
+                } else {
+                    delete user.password;
+                    return {
+                        user,
+                        status: {
+                            success: true,
+                            message: 'Success'
+                        }
+                    };
+                }
+            }
+        } catch (error) {
+            console.log({ error });
+            session.close();
+        }
         return {
-            accessToken: null,
-            refreshToken: null,
+            user: null,
             status: {
                 success: true,
                 message: 'Success'

@@ -1,17 +1,18 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { ClientGrpc } from '@nestjs/microservices';
-import { USER_SERVICE_NAME, UserServiceClient } from 'proto/auth';
+import { USER_SERVICE_NAME, UserServiceClient } from '../../../proto/auth';
+import { ConfigService } from '@nestjs/config';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') implements OnModuleInit {
     private userService: UserServiceClient;
 
     constructor(
-        private config: ConfigService,
-        @Inject('user') private client: ClientGrpc
+        @Inject('user') private client: ClientGrpc,
+        private config: ConfigService
     ) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -25,8 +26,9 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') implements On
     }
 
     async validate(id: string) {
-        const user = await this.userService.findOneUser({ id });
-        console.log({ user });
+        const response = await lastValueFrom(this.userService.findOneUser({ id }));
+        const user = response.user;
+        delete user.password;
         return user;
     }
 }

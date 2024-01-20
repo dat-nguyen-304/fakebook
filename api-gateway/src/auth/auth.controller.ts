@@ -1,6 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe } from '@nestjs/common';
-import { UserService } from './user.service';
-import { CreateUserDto, LoginDto } from './user.entity';
+import { Body, Controller, Get, Post, UsePipes, ValidationPipe } from '@nestjs/common';
+import { UserService } from './auth.service';
+import { CreateUserDto, LoginDto } from './auth.entity';
 
 @Controller('auth')
 @UsePipes(new ValidationPipe())
@@ -15,5 +15,10 @@ export class UserController {
     @Post('signin')
     login(@Body() loginDto: LoginDto) {
         return this.userService.login(loginDto);
+    }
+
+    @Post('refresh')
+    refresh(@Body() token: string) {
+        return this.userService.refresh(token);
     }
 }

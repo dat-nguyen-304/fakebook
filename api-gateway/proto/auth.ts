@@ -24,12 +24,6 @@ export interface UsersResponse {
     users: Users | undefined;
 }
 
-export interface TokenResponse {
-    status: Status | undefined;
-    accessToken: string;
-    refreshToken: string;
-}
-
 export interface PaginationDto {
     page: number;
     skip: number;
@@ -37,9 +31,10 @@ export interface PaginationDto {
 
 export interface UpdateUserDto {
     id: string;
-    age: number;
     password: string;
     fullName: string;
+    gender: string;
+    biography: string;
 }
 
 export interface FindOneUserDto {
@@ -54,8 +49,9 @@ export interface Users {
 
 export interface CreateUserDto {
     username: string;
-    password: string;
     fullName: string;
+    gender: string;
+    password: string;
 }
 
 export interface LoginDto {
@@ -68,8 +64,9 @@ export interface User {
     username: string;
     password: string;
     fullName: string;
-    age: number;
     isOnline: boolean;
+    biography: string;
+    gender: string;
     lastOnline: number;
     createdDate: number;
     updatedDate: number;
@@ -80,7 +77,7 @@ export const USER_PACKAGE_NAME = 'user';
 export interface UserServiceClient {
     createUser(request: CreateUserDto): Observable<UserResponse>;
 
-    login(request: LoginDto): Observable<TokenResponse>;
+    login(request: LoginDto): Observable<UserResponse>;
 
     findAllUsers(request: Empty): Observable<UsersResponse>;
 
@@ -92,7 +89,7 @@ export interface UserServiceClient {
 export interface UserServiceController {
     createUser(request: CreateUserDto): Promise<UserResponse> | Observable<UserResponse> | UserResponse;
 
-    login(request: LoginDto): Promise<TokenResponse> | Observable<TokenResponse> | TokenResponse;
+    login(request: LoginDto): Promise<UserResponse> | Observable<UserResponse> | UserResponse;
 
     findAllUsers(request: Empty): Promise<UsersResponse> | Observable<UsersResponse> | UsersResponse;
 

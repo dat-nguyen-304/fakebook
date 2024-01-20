@@ -6,17 +6,13 @@ import {
     UpdateUserDto,
     UserServiceControllerMethods,
     FindOneUserDto,
-    PaginationDto,
-    Users,
     LoginDto
 } from '@/proto/auth';
-import { Observable } from 'rxjs';
 
 @Controller()
 @UserServiceControllerMethods()
 export class UserController implements UserServiceController {
     constructor(private readonly userService: UserService) {}
-
     createUser(createUserDto: CreateUserDto) {
         return this.userService.create(createUserDto);
     }

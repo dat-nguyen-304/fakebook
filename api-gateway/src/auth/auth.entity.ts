@@ -1,5 +1,10 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { IsAlphanumeric, Length, Max, Min, MinLength } from 'class-validator';
+import { IsAlpha, IsAlphanumeric, IsEnum, Length, MaxLength, MinLength } from 'class-validator';
+
+enum Gender {
+    MALE = 'MALE',
+    FEMALE = 'FEMALE'
+}
 
 @Entity()
 export class User {
@@ -12,10 +17,17 @@ export class User {
 
     @Column()
     @Length(3, 30)
+    @IsAlpha()
     fullName: string;
 
     @Column()
+    @MinLength(6)
     password: string;
+
+    gender: number;
+
+    @MaxLength(500)
+    biography: string;
 
     @CreateDateColumn()
     createdDate?: Date;
@@ -31,6 +43,9 @@ export class CreateUserDto {
 
     @Length(3, 30)
     fullName: string;
+
+    @IsEnum(Gender)
+    gender: Gender;
 
     @MinLength(3)
     password: string;

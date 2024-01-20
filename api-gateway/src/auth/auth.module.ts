@@ -1,14 +1,15 @@
 import { Module } from '@nestjs/common';
 
-import { User } from './user.entity';
+import { User } from './auth.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
-import { UserController } from './user.controller';
+import { UserController } from './auth.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
-import { UserService } from './user.service';
+import { UserService } from './auth.service';
 import { USER_PACKAGE_NAME, USER_SERVICE_NAME } from '../../proto/auth';
 import { JwtStrategy } from './strategy/index';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
     // imports: [TypeOrmModule.forFeature([User])],
@@ -25,7 +26,7 @@ import { JwtStrategy } from './strategy/index';
         ]),
         JwtModule.register({})
     ],
-    providers: [UserService],
+    providers: [UserService, JwtStrategy, ConfigService],
     controllers: [UserController]
 })
 export class UserModule {}
