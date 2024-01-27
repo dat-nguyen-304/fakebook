@@ -34,7 +34,7 @@ export default function Auth() {
                 router.push('/');
             } else if (refreshTkn.exp * 1000 > new Date().getTime()) {
                 const refresh = async () => {
-                    const response = await authApi.refresh(refreshToken);
+                    const response = await authApi.refresh({ refreshToken });
                     handleToken(response);
                 };
                 refresh();

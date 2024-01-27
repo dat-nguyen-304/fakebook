@@ -9,9 +9,9 @@ export const authApi = {
         }
     },
 
-    refresh: (refreshToken: string) => {
+    refresh: (payload: { refreshToken: string }) => {
         try {
-            return axiosClient.post('/auth/refresh', refreshToken);
+            return axiosClient.post('/auth/refresh', payload);
         } catch (error) {
             console.log({ error });
         }
@@ -19,7 +19,6 @@ export const authApi = {
 
     register: (payload: any) => {
         try {
-            console.log(payload.gender);
             return axiosClient.post('/auth/signup', payload);
         } catch (error) {
             console.log({ error });

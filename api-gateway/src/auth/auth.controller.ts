@@ -18,7 +18,7 @@ export class UserController {
     }
 
     @Post('refresh')
-    refresh(@Body() token: string) {
+    refresh(@Body('refreshToken') token: string) {
         return this.userService.refresh(token);
     }
 }

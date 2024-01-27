@@ -37,7 +37,7 @@ const HeaderNotification: React.FC<HeaderNotificationProps> = () => {
             >
                 <PiMessengerLogoFill size={20} color="#e4e6eb" />
                 <div className="absolute top-[-5px] right-[-5px] text-[13px] text-white flex justify-center items-center px-[6px] h-[19px] bg-[#e41e3f] rounded-full">
-                    1
+                    9
                 </div>
             </div>
             <MessageList isMessageOpen={isMessageOpen} />

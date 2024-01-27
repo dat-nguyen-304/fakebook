@@ -125,14 +125,19 @@ export class UserService {
         };
     }
 
-    findOne(id: string) {
-        return {
-            user: null,
-            status: {
-                success: true,
-                message: 'Success'
-            }
-        };
+    async findOne(id: string) {
+        const session = this.driver.session();
+        try {
+            const result = await session.run('MATCH (user:USER {id : $id}) RETURN user;', {
+                id
+            });
+            session.close();
+            if (result.records.length === 0) return null;
+            return result.records[0].get(0).properties;
+        } catch (error) {
+            console.log({ error });
+            session.close();
+        }
     }
 
     update(id: string, updateUserDto: UpdateUserDto) {

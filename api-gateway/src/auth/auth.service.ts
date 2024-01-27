@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { CreateUserDto, UserServiceClient, USER_SERVICE_NAME, LoginDto } from '../../proto/auth';
 import { ClientGrpc } from '@nestjs/microservices';
 import { JwtService } from '@nestjs/jwt';
@@ -44,10 +44,17 @@ export class UserService implements OnModuleInit {
 
     async refresh(refreshToken: string) {
         try {
-            const { id, username, fullName } = await this.jwt.verifyAsync(refreshToken);
-            const response = await lastValueFrom(this.userService.findOneUser(id));
-            const user = response.user;
-            if (!user) return response;
+            const { id, username, fullName } = await this.jwt.verifyAsync(refreshToken, {
+                secret: this.config.get('JWT_REFRESH_SECRET')
+            });
+            const response = await lastValueFrom(this.userService.findOneUser({ id }));
+            if (!response)
+                return {
+                    status: {
+                        success: false,
+                        message: 'Can not find user'
+                    }
+                };
             const tokens = await this.signToken(id, username, fullName);
             return {
                 status: {

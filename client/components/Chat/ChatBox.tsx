@@ -5,10 +5,13 @@ import { IoClose } from 'react-icons/io5';
 import { TbPhotoFilled } from 'react-icons/tb';
 import { BiSolidSend } from 'react-icons/bi';
 import { useState } from 'react';
+import { useChatBox } from '@/hooks';
 
 interface ChatBoxProps {}
 const ChatBox: React.FC<ChatBoxProps> = () => {
     const [isFocus, setIsFocus] = useState<boolean>(false);
+    const { open, onChangeOpen } = useChatBox();
+    if (!open) return null;
     return (
         <div
             className="fixed group bottom-0 right-[96px] h-[455px] w-[328px] rounded-md bg-[#242526] text-[#b0b3b8]"
@@ -24,8 +27,11 @@ const ChatBox: React.FC<ChatBoxProps> = () => {
                         <p className="font-light text-[13px]">Active 12m ago</p>
                     </div>
                 </div>
-                <div>
-                    <IoClose color="#666768" size={24} />
+                <div
+                    onClick={() => onChangeOpen(false)}
+                    className="bg-[#242526] rounded-full cursor-pointer hover:brightness-125 w-[32px] h-[32px] flex items-center justify-center"
+                >
+                    <IoClose color="#0084ff" size={24} />
                 </div>
             </div>
             <div className="p-[8px] h-[347px] overflow-y-scroll">
