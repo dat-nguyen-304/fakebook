@@ -33,7 +33,7 @@ const Login: React.FC<LoginProps> = ({ handleToken }) => {
 
     return (
         <form
-            className="fixed top-0 left-0 right-0 flex justify-between h-[56px] bg-[#00000076] gap-4"
+            className="fixed top-0 left-0 right-0 flex justify-between h-[56px] bg-[#252728] gap-4"
             onSubmit={event => handleSubmit(event)}
         >
             <Image src="/logo.svg" alt="" width={80} height={80} className="w-[5rem]" />

@@ -54,7 +54,7 @@ export default function Register() {
 
     return (
         <form
-            className="flex flex-col w-[500px] bg-[#00000076] px-[5rem] py-[3rem] gap-4 rounded-[2rem]"
+            className="mt-8 flex flex-col w-[500px] bg-[#252728] px-[5rem] py-[3rem] gap-4 rounded-[2rem]"
             onSubmit={event => handleSubmit(event)}
         >
             <div className="flex justify-center items-center">

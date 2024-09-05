@@ -11,7 +11,6 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { AxiosResponse } from 'axios';
 import { useRouter } from 'next/navigation';
-import Loading from '@/app/loading';
 
 interface HeaderProps {}
 const Header: React.FC<HeaderProps> = () => {
@@ -42,10 +41,11 @@ const Header: React.FC<HeaderProps> = () => {
                 }
             } else {
                 router.push('/login');
+                return;
             }
         }
         setIsLoading(false);
-    }, []);
+    }, [user]);
 
     const handleToken = async (response: AxiosResponse<any, any> | undefined) => {
         if (response?.data) {
@@ -67,9 +67,7 @@ const Header: React.FC<HeaderProps> = () => {
     };
 
     if (isLoading)
-        return (
-            <div className="grid grid-cols-3 px-2 h-[56px] bg-[#242526] fixed top-0 left-0 right-0 header z-10"></div>
-        );
+        return <div className="grid grid-cols-3 px-2 h-[56px] bg-[#242526] fixed top-0 left-0 right-0 header" />;
     return (
         <div className="grid grid-cols-3 px-2 h-[56px] bg-[#242526] fixed top-0 left-0 right-0 header z-10">
             <HeaderSearch />
