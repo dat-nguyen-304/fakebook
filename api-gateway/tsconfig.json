@@ -22,7 +22,7 @@
       "@proto/*": ["./proto/*"],
       "@db/*": ["./db/*"],
       "@auth/*": ["./src/auth/*"],
-      "@filters/*": ["./src/filters/*"]
+      "@handlers/*": ["./src/handlers/*"]
     }
   }
 }
