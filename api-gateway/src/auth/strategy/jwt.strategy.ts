@@ -2,7 +2,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
-import { USER_SERVICE_NAME, UserServiceClient } from '../../../proto/auth';
+import { USER_SERVICE_NAME, UserServiceClient } from '@proto/auth';
 import { ConfigService } from '@nestjs/config';
 import { lastValueFrom } from 'rxjs';
 

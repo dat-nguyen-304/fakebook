@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
-
 import { JwtModule } from '@nestjs/jwt';
-import { UserController } from './auth.controller';
+import { UserController } from '@auth/auth.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
-import { UserService } from './auth.service';
-import { USER_PACKAGE_NAME } from '../../proto/auth';
-import { JwtStrategy } from './strategy/index';
+import { UserService } from '@auth/auth.service';
+import { USER_PACKAGE_NAME } from '@proto/auth';
+import { JwtStrategy } from '@auth/strategy/index';
 import { ConfigService } from '@nestjs/config';
 
 @Module({

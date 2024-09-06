@@ -16,6 +16,13 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@src/*": ["./src/*"],
+      "@proto/*": ["./proto/*"],
+      "@db/*": ["./db/*"],
+      "@auth/*": ["./src/auth/*"],
+      "@filters/*": ["./src/filters/*"]
+    }
   }
 }

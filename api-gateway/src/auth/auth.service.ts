@@ -1,5 +1,5 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { CreateUserDto, UserServiceClient, USER_SERVICE_NAME, LoginDto } from '../../proto/auth';
+import { CreateUserDto, UserServiceClient, USER_SERVICE_NAME, LoginDto } from '@proto/auth';
 import { ClientGrpc } from '@nestjs/microservices';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
