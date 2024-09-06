@@ -8,27 +8,27 @@ import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') implements OnModuleInit {
-    private userService: UserServiceClient;
+  private userService: UserServiceClient;
 
-    constructor(
-        @Inject('user') private client: ClientGrpc,
-        private config: ConfigService
-    ) {
-        super({
-            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            ignoreExpiration: false,
-            secretOrKey: config.get('JWT_SECRET')
-        });
-    }
+  constructor(
+    @Inject('user') private client: ClientGrpc,
+    private config: ConfigService
+  ) {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey: config.get('JWT_SECRET')
+    });
+  }
 
-    onModuleInit() {
-        this.userService = this.client.getService<UserServiceClient>(USER_SERVICE_NAME);
-    }
+  onModuleInit() {
+    this.userService = this.client.getService<UserServiceClient>(USER_SERVICE_NAME);
+  }
 
-    async validate(id: string) {
-        const response = await lastValueFrom(this.userService.findOneUser({ id }));
-        const user = response.user;
-        delete user.password;
-        return user;
-    }
+  async validate(id: string) {
+    const response = await lastValueFrom(this.userService.findOneUser({ id }));
+    const user = response.user;
+    delete user.password;
+    return user;
+  }
 }
