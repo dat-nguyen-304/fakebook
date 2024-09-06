@@ -1,12 +1,13 @@
 'use client';
 
-import { ChangeEvent, FormEvent, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import Image from 'next/image';
-import { authApi } from '@/api-client/auth-api';
 import { toast } from 'react-toastify';
+import { APIResponse, ITokensResponse } from '@/types';
+import { useLogin } from '@/hooks/api/auth';
 
 interface LoginProps {
-  handleToken: (response: any) => Promise<void>;
+  handleToken: (response: APIResponse<ITokensResponse>) => void;
 }
 
 const Login: React.FC<LoginProps> = ({ handleToken }) => {
@@ -15,12 +16,18 @@ const Login: React.FC<LoginProps> = ({ handleToken }) => {
     password: ''
   });
 
+  const { mutate: login, data: tokens, isSuccess, isError } = useLogin();
+
+  useEffect(() => {
+    if (isSuccess) handleToken(tokens);
+    else if (isError) console.log('Refresh token error');
+  }, [isSuccess, isError]);
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
       const { password, username } = values;
-      const response = await authApi.login({ username, password });
-      handleToken(response);
+      login({ username, password });
     } catch (error: any) {
       if (error.message[0]) toast.error(error.message[0]);
     }

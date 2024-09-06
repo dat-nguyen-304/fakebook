@@ -10,7 +10,7 @@ interface TabStore {
   onChangeTab: (tab: Tabs | null) => void;
 }
 
-export const useTab = create<TabStore>(set => ({
+export const useTab = create<TabStore>((set: (partial: Partial<TabStore>) => void) => ({
   tab: Tabs.HOME,
   onChangeTab: (tab: Tabs | null) => set({ tab })
 }));

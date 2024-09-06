@@ -1,14 +1,15 @@
-import { z } from 'zod';
+import { AxiosError } from 'axios';
 
-export const StatusResponseZod = z.object({
-  success: z.boolean(),
-  message: z.string()
-});
+export interface APIResponse<T> {
+  success: boolean;
+  statusCode: string;
+  message: string;
+  data: T;
+}
 
-export const LoginResponseZod = z.object({
-  refreshToken: z.string().optional().default(''),
-  accessToken: z.string().optional().default(''),
-  status: StatusResponseZod
-});
+export interface ErrorResponse extends AxiosError<APIResponse<string>> {}
 
-export type LoginResponse = (typeof LoginResponseZod)['_output'];
+export interface ITokensResponse {
+  refreshToken: string;
+  accessToken: string;
+}

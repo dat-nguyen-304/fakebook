@@ -6,7 +6,7 @@ interface UserStore {
   onChangeUser: (user: User | null) => void;
 }
 
-export const useUser = create<UserStore>(set => ({
+export const useUser = create<UserStore>((set: (partial: Partial<UserStore>) => void) => ({
   user: null,
   onChangeUser: (user: User | null) => set({ user })
 }));

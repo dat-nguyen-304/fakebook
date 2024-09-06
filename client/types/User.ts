@@ -1,13 +1,9 @@
-import { z } from 'zod';
-
-export const UserZod = z.object({
-  id: z.string(),
-  username: z.string(),
-  fullName: z.string(),
-  biography: z.string().optional().default(''),
-  gender: z.enum(['MALE', 'FEMALE']).optional(),
-  exp: z.number(),
-  iat: z.number()
-});
-
-export type User = (typeof UserZod)['_output'];
+export interface User {
+  id: string;
+  username: string;
+  fullName: string;
+  biography: string;
+  gender: 'MALE' | 'FEMALE';
+  exp: number;
+  iat: number;
+}

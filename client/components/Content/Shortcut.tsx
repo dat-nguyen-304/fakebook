@@ -1,6 +1,6 @@
 'use client';
 
-import { Tabs, useTab } from '@/hooks';
+import { Tabs, useTab } from '@/hooks/client';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 

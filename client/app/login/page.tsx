@@ -3,14 +3,14 @@
 import Register from '@/components/Auth/Register';
 import Login from '@/components/Auth/Login';
 import { useEffect, useState } from 'react';
-import Loading from '../loading';
-import { useUser } from '@/hooks';
+import Loading from '@/app/loading';
+import { useUser } from '@/hooks/client';
 import { useRouter } from 'next/navigation';
-import { authApi } from '@/api-client/auth-api';
-import { LoginResponseZod, UserZod } from '@/types';
 import { jwtDecode } from 'jwt-decode';
-import { AxiosResponse } from 'axios';
 import { toast } from 'react-toastify';
+import { getTokens, setTokens } from '@/utils/tokens';
+import { APIResponse, ITokensResponse, User } from '@/types';
+import { useRefreshToken } from '@/hooks/api/auth';
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -18,50 +18,44 @@ export default function Auth() {
   const { user, onChangeUser } = useUser();
   const router = useRouter();
 
-  useEffect(() => {
-    const accessToken = localStorage.getItem('accessToken');
-    const refreshToken = localStorage.getItem('refreshToken');
+  const { mutate: callRefreshToken, data: tokens, isSuccess, isError } = useRefreshToken();
 
+  useEffect(() => {
+    const { accessToken, refreshToken } = getTokens();
     if (user) {
       router.push('/');
     } else if (accessToken && refreshToken) {
-      const accessTkn = UserZod.parse(jwtDecode(accessToken));
-      const refreshTkn = UserZod.parse(jwtDecode(refreshToken));
+      const accessDecoded: User = jwtDecode(accessToken);
+      const refreshDecoded: User = jwtDecode(refreshToken);
 
-      if (accessTkn.exp * 1000 > new Date().getTime()) {
-        onChangeUser(accessTkn);
+      if (accessDecoded.exp * 1000 > new Date().getTime()) {
+        onChangeUser(refreshDecoded);
         setIsLoading(false);
         router.push('/');
-      } else if (refreshTkn.exp * 1000 > new Date().getTime()) {
-        const refresh = async () => {
-          const response = await authApi.refresh({ refreshToken });
-          handleToken(response);
-        };
-        refresh();
+      } else if (refreshDecoded.exp * 1000 > new Date().getTime()) {
+        callRefreshToken({ refreshToken });
       }
     }
     setIsLoading(false);
   }, []);
 
-  const handleToken = async (response: AxiosResponse<any, any> | undefined) => {
-    if (response?.data) {
-      const {
-        accessToken,
-        refreshToken,
-        status: { success, message }
-      } = LoginResponseZod.parse(response?.data);
-      if (success) {
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
-        const user = UserZod.parse(jwtDecode(accessToken));
-        onChangeUser(user);
-        setIsLoading(false);
-        router.push('/');
-      } else {
-        toast.error(message);
-      }
-    } else toast.error('Please try again!');
+  const handleToken = (response: APIResponse<ITokensResponse>) => {
+    const { accessToken, refreshToken } = response.data;
+    if (response.success) {
+      setTokens(accessToken, refreshToken);
+      const user: User = jwtDecode(accessToken);
+      onChangeUser(user);
+      setIsLoading(false);
+      router.push('/');
+    } else {
+      toast.error(response.message);
+    }
   };
+
+  useEffect(() => {
+    if (isSuccess) handleToken(tokens);
+    else if (isError) console.log('Refresh token error');
+  }, [isSuccess, isError]);
 
   if (isLoading) return <Loading />;
 

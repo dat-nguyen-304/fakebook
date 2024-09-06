@@ -2,26 +2,14 @@ import axiosClient from './axios-client';
 
 export const authApi = {
   login: (payload: any) => {
-    try {
-      return axiosClient.post('/auth/signin', payload);
-    } catch (error) {
-      console.log({ error });
-    }
+    return axiosClient.post('/auth/signin', payload);
   },
 
   refresh: (payload: { refreshToken: string }) => {
-    try {
-      return axiosClient.post('/auth/refresh', payload);
-    } catch (error) {
-      console.log({ error });
-    }
+    return axiosClient.post('/auth/refresh', payload);
   },
 
   register: (payload: any) => {
-    try {
-      return axiosClient.post('/auth/signup', payload);
-    } catch (error) {
-      console.log({ error });
-    }
+    return axiosClient.post('/auth/signup', payload);
   }
 };

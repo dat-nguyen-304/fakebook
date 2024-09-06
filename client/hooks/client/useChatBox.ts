@@ -7,7 +7,7 @@ interface ChatBoxStore {
   onChangeRecipient: (recipient: number | null) => void;
 }
 
-export const useChatBox = create<ChatBoxStore>(set => ({
+export const useChatBox = create<ChatBoxStore>((set: (partial: Partial<ChatBoxStore>) => void) => ({
   open: false,
   onChangeOpen: (open: boolean) => set({ open }),
   recipient: null,

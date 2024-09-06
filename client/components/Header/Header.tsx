@@ -3,14 +3,14 @@
 import HeaderNotification from './HeaderNotification';
 import HeaderTabs from './HeaderTabs';
 import HeaderSearch from './HeaderSearch';
-import { authApi } from '@/api-client/auth-api';
-import { useUser } from '@/hooks';
-import { LoginResponseZod, UserZod } from '@/types';
+import { useUser } from '@/hooks/client';
 import { jwtDecode } from 'jwt-decode';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { AxiosResponse } from 'axios';
 import { useRouter } from 'next/navigation';
+import { getTokens, setTokens } from '@/utils/tokens';
+import { APIResponse, ITokensResponse, User } from '@/types';
+import { useRefreshToken } from '@/hooks/api/auth';
 
 interface HeaderProps {}
 const Header: React.FC<HeaderProps> = () => {
@@ -18,24 +18,27 @@ const Header: React.FC<HeaderProps> = () => {
 
   const { user, onChangeUser } = useUser();
   const router = useRouter();
+
+  const { mutate: callRefreshToken, data: tokens, isSuccess, isError } = useRefreshToken();
+
   useEffect(() => {
-    const accessToken = localStorage.getItem('accessToken');
-    const refreshToken = localStorage.getItem('refreshToken');
+    if (isSuccess) handleToken(tokens);
+    else if (isError) console.log('Refresh token error');
+  }, [isSuccess, isError]);
+
+  useEffect(() => {
+    const { accessToken, refreshToken } = getTokens();
 
     if (!user) {
       if (accessToken && refreshToken) {
-        const accessTkn = UserZod.parse(jwtDecode(accessToken));
-        const refreshTkn = UserZod.parse(jwtDecode(refreshToken));
+        const accessDecoded: User = jwtDecode(accessToken);
+        const refreshDecoded: User = jwtDecode(refreshToken);
 
-        if (accessTkn.exp * 1000 > new Date().getTime()) {
-          onChangeUser(accessTkn);
+        if (accessDecoded.exp * 1000 > new Date().getTime()) {
+          onChangeUser(accessDecoded);
           setIsLoading(false);
-        } else if (refreshTkn.exp * 1000 > new Date().getTime()) {
-          const refresh = async () => {
-            const response = await authApi.refresh({ refreshToken });
-            handleToken(response);
-          };
-          refresh();
+        } else if (refreshDecoded.exp * 1000 > new Date().getTime()) {
+          callRefreshToken({ refreshToken });
         } else {
           router.push('/login');
         }
@@ -47,23 +50,17 @@ const Header: React.FC<HeaderProps> = () => {
     setIsLoading(false);
   }, [user]);
 
-  const handleToken = async (response: AxiosResponse<any, any> | undefined) => {
-    if (response?.data) {
-      const {
-        accessToken,
-        refreshToken,
-        status: { success, message }
-      } = LoginResponseZod.parse(response?.data);
-      if (success) {
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
-        const user = UserZod.parse(jwtDecode(accessToken));
-        onChangeUser(user);
-        setIsLoading(false);
-      } else {
-        toast.error(message);
-      }
-    } else toast.error('Please try again!');
+  const handleToken = (response: APIResponse<ITokensResponse>) => {
+    const { accessToken, refreshToken } = response.data;
+    if (response.success) {
+      setTokens(accessToken, refreshToken);
+      const user: User = jwtDecode(accessToken);
+      onChangeUser(user);
+      setIsLoading(false);
+      router.push('/');
+    } else {
+      toast.error(response.message);
+    }
   };
 
   if (isLoading)
