@@ -3,78 +3,100 @@
 @tailwind utilities;
 
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body,
 input {
-    font-family: 'Poppins', sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
 .shortcut-friend-icon {
-    background-position: 0px -304px;
-    background-position-x: 0px;
-    background-position-y: -304px;
-    background-size: 38px 570px;
-    width: 36px;
-    height: 36px;
-    background-repeat: no-repeat;
-    display: inline-block;
+  background-position: 0px -304px;
+  background-position-x: 0px;
+  background-position-y: -304px;
+  background-size: 38px 570px;
+  width: 36px;
+  height: 36px;
+  background-repeat: no-repeat;
+  display: inline-block;
 }
 
 .header {
-    box-shadow: 1px 0.2px #fff;
+  box-shadow: 1px 0.2px #fff;
 }
 
 .shadow-border {
-    box-shadow: 0px 0px 1px #fff;
+  box-shadow: 0px 0px 1px #fff;
 }
 
 .shadow-border-t {
-    box-shadow: 0px -0.1px #fff;
+  box-shadow: 0px -0.1px #fff;
 }
 
 .shadow-border-b {
-    box-shadow: 0px 0.1px #fff;
+  box-shadow: 0px 0.1px #fff;
 }
 
 .basic-select {
-    width: 100%;
-    background-color: transparent;
+  width: 100%;
+  background-color: transparent;
 }
 
 .select__control {
-    background-color: transparent !important;
-    border-radius: 0.25rem;
-    padding: 0.8rem;
-    font-size: 1rem;
-    outline: none !important;
+  background-color: transparent !important;
+  border-radius: 0.25rem;
+  padding: 0.8rem;
+  font-size: 1rem;
+  outline: none !important;
 }
 
 .select__control--is-focused {
-    border-color: #4e0eff !important;
+  border-color: #4e0eff !important;
 }
 
 .select__menu {
-    background-color: transparent;
+  background-color: transparent;
 }
 
 .select__option {
-    padding: 0.5rem 1rem;
-    cursor: pointer;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
 }
 
 .select__option--is-selected {
-    background-color: #4e0eff !important;
-    color: #fff;
+  background-color: #4e0eff !important;
+  color: #fff;
 }
 
 .select__input {
-    color: #e0e2e6 !important;
+  color: #e0e2e6 !important;
 }
 
 .select__single-value {
-    color: #e0e2e6 !important;
+  color: #e0e2e6 !important;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 16px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #424242;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #686868;
+  border-radius: 2px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #7b7b7b;
+  border-radius: 2px;
 }

@@ -37,15 +37,9 @@ const Header: React.FC<HeaderProps> = () => {
         if (accessDecoded.exp * 1000 > new Date().getTime()) {
           onChangeUser(accessDecoded);
           setIsLoading(false);
-        } else if (refreshDecoded.exp * 1000 > new Date().getTime()) {
-          callRefreshToken({ refreshToken });
-        } else {
-          router.push('/login');
-        }
-      } else {
-        router.push('/login');
-        return;
-      }
+        } else if (refreshDecoded.exp * 1000 > new Date().getTime()) callRefreshToken({ refreshToken });
+        else router.push('/login');
+      } else return router.push('/login');
     }
     setIsLoading(false);
   }, [user]);
