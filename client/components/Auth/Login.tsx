@@ -1,8 +1,8 @@
 'use client';
 
-import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { toast } from 'react-toastify';
+import { Id, toast } from 'react-toastify';
 import { APIResponse, ITokensResponse } from '@/types';
 import { useLogin } from '@/hooks/api/auth';
 
@@ -16,12 +16,19 @@ const Login: React.FC<LoginProps> = ({ handleToken }) => {
     password: ''
   });
 
-  const { mutate: login, data: tokens, isSuccess, isError } = useLogin();
+  const { mutate: login, data: tokens, isSuccess, isError, isPending, error } = useLogin();
+  const toastIdRef = useRef<Id>();
 
   useEffect(() => {
-    if (isSuccess) handleToken(tokens);
-    else if (isError) console.log('Refresh token error');
-  }, [isSuccess, isError]);
+    if (isPending) toastIdRef.current = toast.loading('Loading...');
+    if (isSuccess) {
+      handleToken(tokens);
+      toast.dismiss(toastIdRef.current);
+    } else if (isError) {
+      toast.error(error.message);
+      toast.dismiss(toastIdRef.current);
+    }
+  }, [isPending, isSuccess, isError]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -29,7 +36,7 @@ const Login: React.FC<LoginProps> = ({ handleToken }) => {
       const { password, username } = values;
       login({ username, password });
     } catch (error: any) {
-      if (error.message[0]) toast.error(error.message[0]);
+      if (error.message) toast.error(error.message);
     }
   };
 

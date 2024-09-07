@@ -1,44 +1,48 @@
 'use client';
 
-import { ChangeEvent, FormEvent, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { authApi } from '@/api-client/auth-api';
-import { toast } from 'react-toastify';
+import { Id, toast } from 'react-toastify';
+import { useRegister } from '@/hooks/api/auth';
+import { IRegisterPayload } from '@/types';
 
 enum Gender {
   MALE = 'MALE',
   FEMALE = 'FEMALE'
 }
 
+const defaultValues = {
+  fullName: '',
+  gender: 'MALE',
+  username: '',
+  confirmPassword: '',
+  password: ''
+};
+
 export default function Register() {
-  const [values, setValues] = useState({
-    username: '',
-    fullName: '',
-    password: '',
-    confirmPassword: '',
-    gender: 'MALE'
-  });
+  const [values, setValues] = useState(defaultValues);
+  const toastIdRef = useRef<Id>();
+
+  const { mutate: register, isSuccess, isError, isPending, error } = useRegister();
+
+  useEffect(() => {
+    if (isPending) toastIdRef.current = toast.loading('Registering');
+    if (isSuccess) {
+      toast.success('Register success');
+      setValues(defaultValues);
+      toast.dismiss(toastIdRef.current);
+    } else if (isError) {
+      toast.error(error.message);
+      toast.dismiss(toastIdRef.current);
+    }
+  }, [isPending, isSuccess, isError]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
       const { confirmPassword, ...data } = values;
       if (data.password === confirmPassword) {
-        const response = await authApi.register(data);
-        if (response?.data.status) {
-          if (response.data.status.success) {
-            toast.success('Register success');
-            setValues({
-              fullName: '',
-              gender: 'MALE',
-              username: '',
-              confirmPassword: '',
-              password: ''
-            });
-          } else {
-            toast.error(response.data.status.message);
-          }
-        } else toast.error('Something went wrong');
+        register(data as IRegisterPayload);
       } else toast.error('Confirm password does not match!');
     } catch (error: any) {
       if (error.message[0]) toast.error(error.message[0]);
@@ -46,9 +50,6 @@ export default function Register() {
   };
 
   const handleChange = (event: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLSelectElement>) => {
-    console.log(event.target.name);
-    console.log(event.target.value);
-
     setValues({ ...values, [event.target.name]: event.target.value });
   };
 
@@ -115,6 +116,7 @@ export default function Register() {
       <button
         className="w-full bg-[#0780ff] text-[#e0e2e6] px-[2rem] py-[1rem] border-none font-bold cursor-pointer rounded-md text-[1rem] uppercase transition ease-in-out hover:bg-[#4e0eff]"
         type="submit"
+        disabled={isPending}
       >
         Register
       </button>

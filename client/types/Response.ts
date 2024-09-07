@@ -13,3 +13,12 @@ export interface ITokensResponse {
   refreshToken: string;
   accessToken: string;
 }
+
+export interface IRegisterResponse {
+  id: string;
+  username: string;
+  fullName: string;
+  gender: 'MALE' | 'FEMALE';
+  createdDate: any;
+  updatedDate: any;
+}
