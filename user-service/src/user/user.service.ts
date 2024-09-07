@@ -19,11 +19,11 @@ export class UserService {
       const result = await session.run('MATCH (user:USER {username : $username}) RETURN user;', {
         username
       });
-      session.close();
       if (result.records.length === 0) return null;
       return result.records[0].get(0).properties;
     } catch (error) {
       console.log({ error });
+    } finally {
       session.close();
     }
   }
@@ -32,39 +32,34 @@ export class UserService {
     const session = this.driver.session();
     try {
       const checkUser = await this.findByUsername(createUserDto.username);
-      if (checkUser) {
+      if (checkUser)
         return {
-          user: null,
-          status: {
-            message: 'Username already exist',
-            success: false
-          }
+          success: false,
+          message: 'Username already exists',
+          data: null
         };
-      } else {
-        const addedResult = await session.run(
-          'CREATE (user: USER {id: $uuid, username: $username, fullName: $fullName, password: $password, gender: $gender, createdDate: timestamp(), updatedDate: timestamp()}) RETURN user;',
-          {
-            uuid: randomUUID(),
-            username: createUserDto.username,
-            fullName: createUserDto.fullName,
-            gender: createUserDto.gender,
-            password: await argon.hash(createUserDto.password)
-          }
-        );
-        console.log(createUserDto);
-        session.close();
-        const newUser = addedResult.records[0].get(0).properties;
-        delete newUser.password;
-        return {
-          user: newUser,
-          status: {
-            success: true,
-            message: 'Success'
-          }
-        };
-      }
+      const addedResult = await session.run(
+        'CREATE (user: USER {id: $uuid, username: $username, fullName: $fullName, password: $password, gender: $gender, createdDate: timestamp(), updatedDate: timestamp()}) RETURN user;',
+        {
+          uuid: randomUUID(),
+          username: createUserDto.username,
+          fullName: createUserDto.fullName,
+          gender: createUserDto.gender,
+          password: await argon.hash(createUserDto.password)
+        }
+      );
+
+      const newUser = addedResult.records[0].get(0).properties;
+      delete newUser.password;
+      return {
+        message: 'Success',
+        success: true,
+        data: newUser
+      };
     } catch (error) {
       console.log({ error });
+      session.close();
+    } finally {
       session.close();
     }
   }
@@ -73,55 +68,39 @@ export class UserService {
     const session = this.driver.session();
     try {
       const user = await this.findByUsername(loginDto.username);
-      if (!user) {
+      if (!user)
         return {
-          user: null,
-          status: {
-            success: false,
-            message: 'Username does not exist'
-          }
+          success: false,
+          message: 'Username does not exist',
+          data: null
         };
-      } else {
-        const pwMatches = await argon.verify(user.password, loginDto.password);
-        if (!pwMatches) {
-          return {
-            user: null,
-            status: {
-              success: false,
-              message: 'Password is incorrect'
-            }
-          };
-        } else {
-          delete user.password;
-          return {
-            user,
-            status: {
-              success: true,
-              message: 'Success'
-            }
-          };
-        }
-      }
+
+      const pwMatches = await argon.verify(user.password, loginDto.password);
+      if (!pwMatches)
+        return {
+          success: false,
+          message: 'Password is incorrect',
+          data: null
+        };
+
+      delete user.password;
+      return {
+        success: true,
+        message: 'success',
+        data: user
+      };
     } catch (error) {
       console.log({ error });
+    } finally {
       session.close();
     }
-    return {
-      user: null,
-      status: {
-        success: true,
-        message: 'Success'
-      }
-    };
   }
 
   findAll() {
     return {
-      users: null,
-      status: {
-        success: true,
-        message: 'Success'
-      }
+      data: null,
+      success: true,
+      message: 'Coming soon ...'
     };
   }
 
@@ -129,22 +108,20 @@ export class UserService {
     const session = this.driver.session();
     try {
       const result = await session.run('MATCH (user:USER {id : $id}) RETURN user;', { id });
-      session.close();
       if (result.records.length === 0) return null;
       return result.records[0].get(0).properties;
     } catch (error) {
       console.log({ error });
+    } finally {
       session.close();
     }
   }
 
   update(id: string, updateUserDto: UpdateUserDto) {
     return {
-      user: null,
-      status: {
-        success: true,
-        message: 'Success'
-      }
+      data: null,
+      success: true,
+      message: 'Coming soon ...'
     };
   }
 }

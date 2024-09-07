@@ -1,5 +1,5 @@
 // npm i ts-proto
-// protoc --plugin=protoc-gen-ts_proto=.\\node_modules\\.bin\\protoc-gen-ts_proto.cmd --ts_proto_out=./ --ts_proto_opt=nestJs=true ./proto/auth.proto
+// npx protoc --plugin=protoc-gen-ts_proto=.\\node_modules\\.bin\\protoc-gen-ts_proto.cmd --ts_proto_out=./ --ts_proto_opt=nestJs=true ./proto/auth.proto
 syntax = "proto3";
 
 package user;
@@ -12,19 +12,16 @@ service UserService {
     rpc UpdateUser (UpdateUserDto) returns (UserResponse) {}
 }
 
-message Status {
+message UserResponse {
     bool success = 1;
     string message = 2;
-}
-
-message UserResponse {
-    Status status = 1;
-    User user = 2;
+    User data = 3;
 }
 
 message UsersResponse {
-    Status status = 1;
-    Users users = 2;
+    bool success = 1;
+    string message = 2;
+    Users data = 3;
 }
 
 message PaginationDto {
