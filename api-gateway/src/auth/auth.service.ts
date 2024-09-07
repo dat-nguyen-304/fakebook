@@ -19,24 +19,27 @@ export class UserService implements OnModuleInit {
     this.userService = this.client.getService<UserServiceClient>(USER_SERVICE_NAME);
   }
 
-  create(createUserDto: CreateUserDto) {
-    return this.userService.createUser(createUserDto);
+  async create(createUserDto: CreateUserDto) {
+    const response = await lastValueFrom(this.userService.createUser(createUserDto));
+    if (!response.success) throw new BadRequestException(response.message);
+    return response.data;
   }
 
   async login(loginDto: LoginDto) {
     const response = await lastValueFrom(this.userService.login(loginDto));
-    const user = response.user;
-    if (!user) throw new BadRequestException('Can not find user');
+    const user = response.data;
+    if (!user) throw new BadRequestException(response.message);
     const tokens = await this.signToken(user.id, user.username, user.fullName);
     return tokens;
   }
 
   async refresh(refreshToken: string) {
+    if (!refreshToken) throw new BadRequestException('Not found refresh token');
     const { id, username, fullName } = await this.jwt.verifyAsync(refreshToken, {
       secret: this.config.get('JWT_REFRESH_SECRET')
     });
     const response = await lastValueFrom(this.userService.findOneUser({ id }));
-    if (!response) throw new BadRequestException('Can not find user');
+    if (!response.success) throw new BadRequestException(response.message);
     const tokens = await this.signToken(id, username, fullName);
     return tokens;
   }

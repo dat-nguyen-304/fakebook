@@ -20,7 +20,6 @@
     "paths": {
       "@src/*": ["./src/*"],
       "@proto/*": ["./proto/*"],
-      "@db/*": ["./db/*"],
       "@auth/*": ["./src/auth/*"],
       "@handlers/*": ["./src/handlers/*"]
     }
