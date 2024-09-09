@@ -22,7 +22,8 @@
       "@proto/*": ["./proto/*"],
       "@handlers/*": ["./src/handlers/*"],
       "@auth/*": ["./src/auth/*"],
-      "@redis/*": ["./src/redis/*"]
+      "@redis/*": ["./src/redis/*"],
+      "@token/*": ["./src/token/*"]
     }
   }
 }

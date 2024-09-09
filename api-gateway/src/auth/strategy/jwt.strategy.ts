@@ -3,11 +3,10 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Inject, Injectable, OnModuleInit, UnauthorizedException } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { USER_SERVICE_NAME, UserServiceClient } from '@proto/auth';
-import { ConfigService } from '@nestjs/config';
 import { lastValueFrom } from 'rxjs';
 import { Request } from 'express';
 import { RedisService } from '@src/redis/redis.service';
-import { JwtService } from '@nestjs/jwt';
+import { TokenService } from '@token/token.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(CustomStrategy, 'jwt') implements OnModuleInit {
@@ -15,9 +14,8 @@ export class JwtStrategy extends PassportStrategy(CustomStrategy, 'jwt') impleme
 
   constructor(
     @Inject('user') private client: ClientGrpc,
-    private config: ConfigService,
     private redisService: RedisService,
-    private jwt: JwtService
+    private token: TokenService
   ) {
     super();
   }
@@ -35,7 +33,7 @@ export class JwtStrategy extends PassportStrategy(CustomStrategy, 'jwt') impleme
     if (!token) throw new UnauthorizedException('Access token is missing');
     const isTokenValid = await this.redisService.isValidToken(token, 'access');
     if (!isTokenValid) throw new UnauthorizedException('Token is invalid or has been revoked');
-    const decoded = await this.jwt.decode(token);
+    const decoded = await this.token.decodeToken(token);
     const response = await lastValueFrom(this.userService.findOneUser({ id: decoded.id }));
     const user = response.data;
     delete user.password;
