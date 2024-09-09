@@ -1,5 +1,5 @@
 import axiosClient from '@/axios/axios-client';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   APIResponse,
   ErrorResponse,
@@ -7,7 +7,8 @@ import {
   ILoginPayload,
   IRefreshTokenPayload,
   IRegisterResponse,
-  IRegisterPayload
+  IRegisterPayload,
+  User
 } from '@/types';
 
 export const useLogin = () => {
@@ -32,6 +33,16 @@ export const useRefreshToken = () => {
   return useMutation<APIResponse<ITokensResponse>, ErrorResponse, IRefreshTokenPayload>({
     mutationFn: async payload => {
       const response: APIResponse<ITokensResponse> = await axiosClient.post('/auth/refresh', payload);
+      return response;
+    }
+  });
+};
+
+export const useMe = () => {
+  return useQuery<APIResponse<User>, ErrorResponse>({
+    queryKey: ['me'],
+    queryFn: async () => {
+      const response: APIResponse<User> = await axiosClient.get('/auth/me');
       return response;
     }
   });

@@ -2,7 +2,7 @@ import { AxiosError } from 'axios';
 
 export interface APIResponse<T> {
   success: boolean;
-  statusCode: string;
+  statusCode: number;
   message: string;
   data: T;
 }

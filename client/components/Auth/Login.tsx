@@ -3,31 +3,28 @@
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { Id, toast } from 'react-toastify';
-import { APIResponse, ITokensResponse } from '@/types';
 import { useLogin } from '@/hooks/api/auth';
+import { QueryObserverResult } from '@tanstack/react-query';
+import { APIResponse, ErrorResponse, User } from '@/types';
 
 interface LoginProps {
-  handleToken: (response: APIResponse<ITokensResponse>) => void;
+  refetch: () => Promise<QueryObserverResult<APIResponse<User>, ErrorResponse>>;
 }
 
-const Login: React.FC<LoginProps> = ({ handleToken }) => {
+const Login: React.FC<LoginProps> = ({ refetch }) => {
   const [values, setValues] = useState({
     username: '',
     password: ''
   });
 
-  const { mutate: login, data: tokens, isSuccess, isError, isPending, error } = useLogin();
+  const { mutate: login, isSuccess, isError, isPending, error } = useLogin();
   const toastIdRef = useRef<Id>();
 
   useEffect(() => {
     if (isPending) toastIdRef.current = toast.loading('Loading...');
-    if (isSuccess) {
-      handleToken(tokens);
-      toast.dismiss(toastIdRef.current);
-    } else if (isError) {
-      toast.error(error.message);
-      toast.dismiss(toastIdRef.current);
-    }
+    if (isSuccess) refetch();
+    if (isError) toast.error(error.message);
+    toast.dismiss(toastIdRef.current);
   }, [isPending, isSuccess, isError]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
