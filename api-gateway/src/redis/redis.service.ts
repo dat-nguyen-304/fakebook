@@ -78,13 +78,11 @@ export class RedisService {
     }
   }
 
-  async deleteToken(tokens: { accessToken: string; refreshToken: string }): Promise<void> {
-    const { accessToken, refreshToken } = tokens;
-    const userId = this.getUserIdFromToken(accessToken);
-    const accessKey = this.generateTokenKey(userId, accessToken, 'access');
-    const refreshKey = this.generateTokenKey(userId, refreshToken, 'refresh');
+  async deleteToken(token: string, tokenType: 'access' | 'refresh'): Promise<void> {
+    const userId = this.getUserIdFromToken(token);
+    const key = this.generateTokenKey(userId, token, tokenType);
     try {
-      await this.client.multi().del(accessKey).del(refreshKey).exec();
+      await this.client.del(key);
       this.logger.log(`Deleted tokens for user ${userId}`);
     } catch (error) {
       this.logger.error(`Error deleting tokens for user ${userId}`, error);

@@ -38,10 +38,16 @@ export class AuthService implements OnModuleInit {
     if (!refreshToken) throw new BadRequestException('Not found refresh token');
     const { id, username, fullName } = await this.token.verifyRefreshToken(refreshToken);
     const isValidRefreshToken = await this.redis.isValidToken(refreshToken, 'refresh');
+
     if (!isValidRefreshToken) {
       await this.redis.deleteAllTokensForUser(id);
       throw new BadRequestException('Your session is invalidated due to an anomaly');
     }
-    return await this.token.signToken(id, username, fullName);
+
+    await this.redis.deleteToken(refreshToken, 'refresh');
+
+    const tokens = await this.token.signToken(id, username, fullName);
+    this.redis.storeToken(tokens);
+    return tokens;
   }
 }

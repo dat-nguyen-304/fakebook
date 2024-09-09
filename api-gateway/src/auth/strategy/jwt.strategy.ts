@@ -30,7 +30,7 @@ export class JwtStrategy extends PassportStrategy(CustomStrategy, 'jwt') impleme
 
   async validate(req: Request) {
     const token = req.cookies?.accessToken;
-    if (!token) throw new UnauthorizedException('Access token is missing');
+    if (!token) throw new UnauthorizedException('Token is invalid or has been revoked');
     const isTokenValid = await this.redisService.isValidToken(token, 'access');
     if (!isTokenValid) throw new UnauthorizedException('Token is invalid or has been revoked');
     const decoded = await this.token.decodeToken(token);
