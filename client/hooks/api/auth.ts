@@ -38,6 +38,15 @@ export const useRefreshToken = () => {
   });
 };
 
+export const useLogout = () => {
+  return useMutation<APIResponse<string>, ErrorResponse>({
+    mutationFn: async () => {
+      const response: APIResponse<string> = await axiosClient.post('/auth/logout');
+      return response;
+    }
+  });
+};
+
 export const useMe = () => {
   return useQuery<APIResponse<User>, ErrorResponse>({
     queryKey: ['me'],

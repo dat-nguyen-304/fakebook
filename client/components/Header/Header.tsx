@@ -15,14 +15,19 @@ const Header: React.FC<HeaderProps> = () => {
   const { user, onChangeUser } = useUser();
   const router = useRouter();
 
-  const { data: me, isSuccess, isError } = useMe();
+  const { data: me, isSuccess, isError, isPending } = useMe();
 
   useEffect(() => {
     if (!user) {
-      if (isSuccess) onChangeUser(me.data);
-      else if (isError) return router.push('/login');
+      if (isSuccess) {
+        onChangeUser(me.data);
+      } else if (isError) {
+        onChangeUser(null);
+        setIsLoading(true);
+        return router.replace('/login');
+      } else if (isPending) setIsLoading(true);
     } else setIsLoading(false);
-  }, [user, isSuccess, isError]);
+  }, [user, me, isSuccess, isError]);
 
   if (isLoading)
     return <div className="grid grid-cols-3 px-2 h-[56px] bg-[#242526] fixed top-0 left-0 right-0 header" />;

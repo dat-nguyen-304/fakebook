@@ -28,7 +28,6 @@ axiosClient.interceptors.response.use(
           { withCredentials: true } // Make sure cookies are sent in the refresh request
         );
       } catch (refreshError) {
-        console.error('Token refresh failed', refreshError);
         return Promise.reject(refreshError);
       }
     }
