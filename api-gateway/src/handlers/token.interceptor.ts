@@ -31,3 +31,26 @@ export class AttachTokensInterceptor implements NestInterceptor {
     );
   }
 }
+
+@Injectable()
+export class RemoveTokensInterceptor implements NestInterceptor {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    const ctx = context.switchToHttp();
+    const response = ctx.getResponse<Response>();
+    return next.handle().pipe(
+      tap(() => {
+        // Remove accessToken in cookies
+        response.clearCookie('accessToken', {
+          httpOnly: true,
+          sameSite: 'strict'
+        });
+
+        // Remove refreshToken in cookies
+        response.clearCookie('refreshToken', {
+          httpOnly: true,
+          sameSite: 'strict'
+        });
+      })
+    );
+  }
+}

@@ -50,4 +50,11 @@ export class AuthService implements OnModuleInit {
     this.redis.storeToken(tokens);
     return tokens;
   }
+
+  async logout(accessToken: string, refreshToken: string) {
+    await this.redis.deleteToken(accessToken, 'access');
+    await this.redis.deleteToken(refreshToken, 'refresh');
+
+    return 'Logged out successfully';
+  }
 }
