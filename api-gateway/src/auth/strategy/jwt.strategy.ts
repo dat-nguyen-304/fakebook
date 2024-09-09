@@ -1,32 +1,42 @@
-import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Strategy as CustomStrategy } from 'passport-custom';
 import { PassportStrategy } from '@nestjs/passport';
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit, UnauthorizedException } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { USER_SERVICE_NAME, UserServiceClient } from '@proto/auth';
 import { ConfigService } from '@nestjs/config';
 import { lastValueFrom } from 'rxjs';
+import { Request } from 'express';
+import { RedisService } from '@src/redis/redis.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') implements OnModuleInit {
+export class JwtStrategy extends PassportStrategy(CustomStrategy, 'jwt') implements OnModuleInit {
   private userService: UserServiceClient;
 
   constructor(
     @Inject('user') private client: ClientGrpc,
-    private config: ConfigService
+    private config: ConfigService,
+    private redisService: RedisService,
+    private jwt: JwtService
   ) {
-    super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false,
-      secretOrKey: config.get('JWT_SECRET')
-    });
+    super();
   }
 
   onModuleInit() {
     this.userService = this.client.getService<UserServiceClient>(USER_SERVICE_NAME);
   }
 
-  async validate(id: string) {
-    const response = await lastValueFrom(this.userService.findOneUser({ id }));
+  error(err: Error): void {
+    console.log(err.message);
+  }
+
+  async validate(req: Request) {
+    const token = req.cookies?.accessToken;
+    if (!token) throw new UnauthorizedException('Access token is missing');
+    const isTokenValid = await this.redisService.isValidToken(token, 'access');
+    if (!isTokenValid) throw new UnauthorizedException('Token is invalid or has been revoked');
+    const decoded = await this.jwt.decode(token);
+    const response = await lastValueFrom(this.userService.findOneUser({ id: decoded.id }));
     const user = response.data;
     delete user.password;
     return user;

@@ -1,9 +1,10 @@
 import { BadRequestException, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { CreateUserDto, UserServiceClient, USER_SERVICE_NAME, LoginDto } from '@proto/auth';
 import { ClientGrpc } from '@nestjs/microservices';
+import { lastValueFrom } from 'rxjs';
+import { RedisService } from '@src/redis/redis.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class UserService implements OnModuleInit {
@@ -12,6 +13,7 @@ export class UserService implements OnModuleInit {
   constructor(
     @Inject('user') private client: ClientGrpc,
     private jwt: JwtService,
+    private redis: RedisService,
     private config: ConfigService
   ) {}
 
@@ -30,6 +32,7 @@ export class UserService implements OnModuleInit {
     const user = response.data;
     if (!user) throw new BadRequestException(response.message);
     const tokens = await this.signToken(user.id, user.username, user.fullName);
+    this.redis.storeToken(tokens);
     return tokens;
   }
 
@@ -38,22 +41,24 @@ export class UserService implements OnModuleInit {
     const { id, username, fullName } = await this.jwt.verifyAsync(refreshToken, {
       secret: this.config.get('JWT_REFRESH_SECRET')
     });
-    const response = await lastValueFrom(this.userService.findOneUser({ id }));
-    if (!response.success) throw new BadRequestException(response.message);
-    const tokens = await this.signToken(id, username, fullName);
-    return tokens;
+    const isValidRefreshToken = await this.redis.isValidToken(refreshToken, 'refresh');
+    if (!isValidRefreshToken) {
+      await this.redis.deleteAllTokensForUser(id);
+      throw new BadRequestException('Your session is invalidated due to an anomaly');
+    }
+    return await this.signToken(id, username, fullName);
   }
 
   async signToken(id: string, username: string, fullName: string) {
     const payload = { id, username, fullName };
 
     const accessToken = await this.jwt.signAsync(payload, {
-      expiresIn: '15m',
+      expiresIn: '60m',
       secret: this.config.get('JWT_SECRET')
     });
 
     const refreshToken = await this.jwt.signAsync(payload, {
-      expiresIn: '15d',
+      expiresIn: '7d',
       secret: this.config.get('JWT_REFRESH_SECRET')
     });
 

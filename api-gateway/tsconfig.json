@@ -20,8 +20,9 @@
     "paths": {
       "@src/*": ["./src/*"],
       "@proto/*": ["./proto/*"],
+      "@handlers/*": ["./src/handlers/*"],
       "@auth/*": ["./src/auth/*"],
-      "@handlers/*": ["./src/handlers/*"]
+      "@redis/*": ["./src/redis/*"]
     }
   }
 }

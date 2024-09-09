@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
 import { UserController } from '@auth/auth.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { UserService } from '@auth/auth.service';
 import { USER_PACKAGE_NAME } from '@proto/auth';
 import { JwtStrategy } from '@auth/strategy/index';
-import { ConfigService } from '@nestjs/config';
+import { RedisModule } from '@redis/redis.module';
+import { JwtModule } from '@nestjs/jwt';
+import { RedisService } from '@src/redis/redis.service';
 
 @Module({
-  // imports: [TypeOrmModule.forFeature([User])],
   imports: [
     ClientsModule.register([
       {
@@ -21,9 +21,10 @@ import { ConfigService } from '@nestjs/config';
         }
       }
     ]),
+    RedisModule,
     JwtModule.register({})
   ],
-  providers: [UserService, JwtStrategy, ConfigService],
+  providers: [UserService, JwtStrategy, RedisService],
   controllers: [UserController]
 })
 export class UserModule {}

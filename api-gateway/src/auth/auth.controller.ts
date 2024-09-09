@@ -1,6 +1,9 @@
-import { Body, Controller, Post, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { UserService } from '@auth/auth.service';
-import { CreateUserDto, LoginDto } from '@proto/auth';
+import { CreateUserDto, LoginDto, User } from '@proto/auth';
+import { AttachTokensInterceptor } from '@handlers/attach-token.interceptor';
+import { JwtGuard } from './guard';
+import { GetUser } from '@src/decorators';
 
 @Controller('auth')
 @UsePipes(new ValidationPipe())
@@ -13,12 +16,20 @@ export class UserController {
   }
 
   @Post('signin')
+  @UseInterceptors(AttachTokensInterceptor)
   login(@Body() loginDto: LoginDto) {
     return this.userService.login(loginDto);
   }
 
   @Post('refresh')
+  @UseInterceptors(AttachTokensInterceptor)
   refresh(@Body('refreshToken') token: string) {
     return this.userService.refresh(token);
+  }
+
+  @Get('me')
+  @UseGuards(JwtGuard)
+  getMe(@GetUser() user: User) {
+    return user;
   }
 }
