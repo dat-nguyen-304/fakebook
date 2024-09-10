@@ -3,9 +3,9 @@ import { Mulish } from 'next/font/google';
 import './globals.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Header from '@/components/Header/Header';
-import ChatBox from '@/components/Chat/ChatBox';
-import ReactQueryProvider from '@/providers/ReactQueryProvider';
+import Header from '@components/header/Header';
+import ChatBox from '@components/chat/ChatBox';
+import ReactQueryProvider from '@components/providers/ReactQueryProvider';
 
 const inter = Mulish({ subsets: ['latin'] });
 

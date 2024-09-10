@@ -1,4 +1,4 @@
-import axiosClient from '@/axios/axios-client';
+import axiosClient from '@axios/axios-client';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   APIResponse,
@@ -9,7 +9,7 @@ import {
   IRegisterResponse,
   IRegisterPayload,
   User
-} from '@/types';
+} from '@types';
 
 export const useLogin = () => {
   return useMutation<APIResponse<ITokensResponse>, ErrorResponse, ILoginPayload>({

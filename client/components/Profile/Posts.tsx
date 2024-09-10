@@ -1,4 +1,5 @@
 'use client';
+
 import { IoHomeSharp } from 'react-icons/io5';
 
 interface PostsProps {}

@@ -1,11 +1,8 @@
-import NotificationItem from './NotificationItem';
+import NotificationItem from '@components/header/NotificationItem';
 
-interface NotificationListProps {
-  isNotificationOpen: boolean;
-}
+interface NotificationListProps {}
 
-const NotificationList: React.FC<NotificationListProps> = ({ isNotificationOpen }) => {
-  if (!isNotificationOpen) return null;
+const NotificationList: React.FC<NotificationListProps> = () => {
   return (
     <div className="fixed top-[57px] bottom-[50px] rounded-md shadow-md right-[20px] w-[360px] bg-[#242526] text-[#b0b3b8] px-[8px] pt-[16px] pb-[32px]">
       <div className="overflow-y-scroll h-full">

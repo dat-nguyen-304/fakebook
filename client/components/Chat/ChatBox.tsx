@@ -5,7 +5,7 @@ import { IoClose } from 'react-icons/io5';
 import { TbPhotoFilled } from 'react-icons/tb';
 import { BiSolidSend } from 'react-icons/bi';
 import { useState } from 'react';
-import { useChatBox } from '@/hooks/client';
+import { useChatBox } from '@hooks/client';
 
 interface ChatBoxProps {}
 const ChatBox: React.FC<ChatBoxProps> = () => {

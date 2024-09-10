@@ -1,64 +1,77 @@
 import Image from 'next/image';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { FaBell } from 'react-icons/fa';
 import { PiMessengerLogoFill } from 'react-icons/pi';
-import MessageList from './MessageList';
-import NotificationList from './NotificationList';
-import ProfileDropdown from './ProfileDropdown';
+import MessageList from '@components/header/MessageList';
+import NotificationList from '@components/header/NotificationList';
+import ProfileDropdown from '@components/header/ProfileDropdown';
+import ModalWrapper from '@components/wrapper/ModalWrapper';
 import cn from 'classnames';
-
-enum TABS {
-  PROFILE = 'profile',
-  MESSAGE = 'message',
-  NOTIFICATION = 'notification'
-}
 
 interface HeaderNotificationProps {}
 
 const HeaderNotification: React.FC<HeaderNotificationProps> = () => {
-  const [selectedTab, setSelectedTab] = useState<TABS | null>(null);
+  const [isOpenMessage, setIsOpenMessage] = useState<boolean>(false);
+  const messageTriggerRef = useRef<HTMLDivElement>(null);
+  const [isOpenNotification, setIsOpenNotification] = useState<boolean>(false);
+  const notificationTriggerRef = useRef<HTMLDivElement>(null);
+  const [isOpenProfile, setIsOpenProfile] = useState<boolean>(false);
+  const profileTriggerRef = useRef<HTMLDivElement>(null);
 
   return (
     <div className="flex items-center flex-row-reverse gap-3 mr-2 select-none">
       <div
         className="rounded-full cursor-pointer"
+        ref={profileTriggerRef}
         onClick={() => {
-          setSelectedTab(selectedTab === TABS.PROFILE ? null : TABS.PROFILE);
+          setIsOpenProfile(!isOpenProfile);
         }}
       >
         <Image src="/avatar.jpg" alt="" width={40} height={40} className="rounded-full" />
       </div>
       <div
+        ref={notificationTriggerRef}
         onClick={() => {
-          setSelectedTab(selectedTab === TABS.NOTIFICATION ? null : TABS.NOTIFICATION);
+          setIsOpenNotification(!isOpenNotification);
         }}
         className={cn(
           'relative w-[40px] h-[40px] flex justify-center items-center rounded-full p-3 cursor-pointer hover:brightness-125',
-          selectedTab === TABS.NOTIFICATION ? 'bg-[#243a52]' : 'bg-[#3a3b3c]'
+          isOpenNotification ? 'bg-[#243a52]' : 'bg-[#3a3b3c]'
         )}
       >
-        <FaBell size={20} color={cn(selectedTab === TABS.NOTIFICATION ? '#0866ff' : '#e4e6eb')} />
+        <FaBell size={20} color={cn(isOpenNotification ? '#0866ff' : '#e4e6eb')} />
         <div className="absolute top-[-5px] right-[-5px] text-[13px] text-white flex justify-center items-center px-[6px] h-[19px] bg-[#e41e3f] rounded-full">
           10
         </div>
       </div>
       <div
+        ref={messageTriggerRef}
         onClick={() => {
-          setSelectedTab(selectedTab === TABS.MESSAGE ? null : TABS.MESSAGE);
+          setIsOpenMessage(!isOpenMessage);
         }}
         className={cn(
           'relative w-[40px] h-[40px] flex justify-center items-center rounded-full p-2 cursor-pointer hover:brightness-125',
-          selectedTab === TABS.MESSAGE ? 'bg-[#243a52]' : 'bg-[#3a3b3c]'
+          isOpenMessage ? 'bg-[#243a52]' : 'bg-[#3a3b3c]'
         )}
       >
-        <PiMessengerLogoFill size={20} color={cn(selectedTab === TABS.MESSAGE ? '#0866ff' : '#e4e6eb')} />
+        <PiMessengerLogoFill size={20} color={cn(isOpenMessage ? '#0866ff' : '#e4e6eb')} />
         <div className="absolute top-[-5px] right-[-5px] text-[13px] text-white flex justify-center items-center px-[6px] h-[19px] bg-[#e41e3f] rounded-full">
           9
         </div>
       </div>
-      <MessageList isMessageOpen={selectedTab === TABS.MESSAGE} />
-      <NotificationList isNotificationOpen={selectedTab === TABS.NOTIFICATION} />
-      <ProfileDropdown isProfileOpen={selectedTab === TABS.PROFILE} />
+      <ModalWrapper isOpen={isOpenMessage} onClose={() => setIsOpenMessage(false)} triggerRef={messageTriggerRef}>
+        <MessageList />
+      </ModalWrapper>
+      <ModalWrapper
+        isOpen={isOpenNotification}
+        onClose={() => setIsOpenNotification(false)}
+        triggerRef={notificationTriggerRef}
+      >
+        <NotificationList />
+      </ModalWrapper>
+      <ModalWrapper isOpen={isOpenProfile} onClose={() => setIsOpenProfile(false)} triggerRef={profileTriggerRef}>
+        <ProfileDropdown onOpen={setIsOpenProfile} />
+      </ModalWrapper>
     </div>
   );
 };

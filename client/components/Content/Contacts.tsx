@@ -1,6 +1,6 @@
 'use client';
 
-import { useChatBox } from '@/hooks/client';
+import { useChatBox } from '@hooks/client';
 import Image from 'next/image';
 
 interface ContactsProps {}

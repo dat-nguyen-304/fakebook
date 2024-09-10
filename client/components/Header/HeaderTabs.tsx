@@ -1,4 +1,4 @@
-import { Tabs, useTab } from '@/hooks/client';
+import { Tabs, useTab } from '@hooks/client';
 import { useRouter } from 'next/navigation';
 import { FaHome, FaUser } from 'react-icons/fa';
 

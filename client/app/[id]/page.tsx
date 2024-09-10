@@ -1,6 +1,6 @@
 'use client';
 
-import Posts from '@/components/Profile/Posts';
+import Posts from '@components/profile/Posts';
 import Image from 'next/image';
 import { FaPencilAlt } from 'react-icons/fa';
 

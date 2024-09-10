@@ -1,11 +1,8 @@
-import MessageItem from './MessageItem';
+import MessageItem from '@components/header/MessageItem';
 
-interface MessageListProps {
-  isMessageOpen: boolean;
-}
+interface MessageListProps {}
 
-const MessageList: React.FC<MessageListProps> = ({ isMessageOpen }) => {
-  if (!isMessageOpen) return null;
+const MessageList: React.FC<MessageListProps> = () => {
   return (
     <div className="fixed top-[57px] bottom-[50px] rounded-md shadow-md right-[50px] w-[360px] bg-[#242526] text-[#b0b3b8] px-[8px] pt-[16px] pb-[32px]">
       <div className="overflow-y-scroll h-full">

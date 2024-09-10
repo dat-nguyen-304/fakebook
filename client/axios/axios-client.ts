@@ -1,6 +1,6 @@
-import { APIResponse } from '@/types';
+import { APIResponse } from '@types';
 import axios, { AxiosError, AxiosResponse } from 'axios';
-import config from '@/config';
+import config from '@config';
 
 const axiosClient = axios.create({
   baseURL: config.backendBaseUrl,

@@ -3,7 +3,7 @@
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { Id, toast } from 'react-toastify';
-import { useLogin, useMe } from '@/hooks/api/auth';
+import { useLogin, useMe } from '@hooks/api/auth';
 import { useRouter } from 'next/navigation';
 
 interface LoginProps {}

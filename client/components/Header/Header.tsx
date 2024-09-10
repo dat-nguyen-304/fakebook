@@ -3,10 +3,10 @@
 import HeaderNotification from './HeaderNotification';
 import HeaderTabs from './HeaderTabs';
 import HeaderSearch from './HeaderSearch';
-import { useUser } from '@/hooks/client';
+import { useUser } from '@hooks/client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useMe } from '@/hooks/api/auth';
+import { useMe } from '@hooks/api/auth';
 
 interface HeaderProps {}
 const Header: React.FC<HeaderProps> = () => {

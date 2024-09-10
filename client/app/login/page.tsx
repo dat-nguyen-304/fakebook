@@ -1,10 +1,10 @@
 'use client';
 
-import Register from '@/components/Auth/Register';
-import Login from '@/components/Auth/Login';
+import Register from '@components/auth/Register';
+import Login from '@components/auth/Login';
 import { useEffect, useState } from 'react';
-import Loading from '@/app/loading';
-import { useUser } from '@/hooks/client';
+import Loading from '@app/loading';
+import { useUser } from '@hooks/client';
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState<boolean>(true);

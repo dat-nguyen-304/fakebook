@@ -3,8 +3,8 @@
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { Id, toast } from 'react-toastify';
-import { useRegister } from '@/hooks/api/auth';
-import { IRegisterPayload } from '@/types';
+import { useRegister } from '@hooks/api/auth';
+import { IRegisterPayload } from '@types';
 
 enum Gender {
   MALE = 'MALE',

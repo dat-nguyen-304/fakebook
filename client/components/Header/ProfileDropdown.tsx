@@ -1,21 +1,24 @@
-import { useLogout } from '@/hooks/api/auth';
-import { useUser } from '@/hooks/client';
+import { useLogout } from '@hooks/api/auth';
+import { useTab, useUser } from '@hooks/client';
 import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { Dispatch, SetStateAction, useEffect } from 'react';
 import { MdOutlineLogout } from 'react-icons/md';
 import { toast } from 'react-toastify';
 
 interface ProfileDropdownProps {
-  isProfileOpen: boolean;
+  onOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isProfileOpen }) => {
+const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ onOpen }) => {
   const router = useRouter();
   const { mutate: logout, isError, isSuccess } = useLogout();
-  const { onChangeUser } = useUser();
+  const { user, onChangeUser } = useUser();
   const queryClient = useQueryClient();
+
+  const { onChangeTab } = useTab();
 
   useEffect(() => {
     if (isSuccess) {
@@ -25,17 +28,24 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isProfileOpen }) => {
     } else if (isError) toast.error('Logout failed');
   }, [isError, isSuccess]);
 
-  if (!isProfileOpen) return null;
   return (
     <div className="fixed top-[57px] rounded-md shadow-md right-[20px] w-[360px] bg-[#242526] text-[#b0b3b8] p-[8px]">
-      <div className="w-[94%] rounded-lg mx-auto bg-[#252728] hover:bg-[#3a3b3c] shadow-xl">
-        <div className="flex items-center gap-2 mt-[10px] p-3 rounded-lg hover:cursor-pointer">
-          <div className="w-[36px]">
-            <Image src="/avatar.jpg" alt="" width={36} height={36} className="rounded-full" />
+      <Link
+        href={`/${user?.id ?? ''}`}
+        onClick={() => {
+          onOpen(false);
+          onChangeTab(null);
+        }}
+      >
+        <div className="w-[94%] rounded-lg mx-auto bg-[#252728] hover:bg-[#3a3b3c] shadow-xl">
+          <div className="flex items-center gap-2 mt-[10px] p-3 rounded-lg hover:cursor-pointer">
+            <div className="w-[36px]">
+              <Image src="/avatar.jpg" alt="" width={36} height={36} className="rounded-full" />
+            </div>
+            <p className="text-[#e4e6eb]">Nguyễn Văn An</p>
           </div>
-          <p className="text-[#e4e6eb]">Nguyễn Văn An</p>
         </div>
-      </div>
+      </Link>
 
       <div className="my-4 h-[1px] w-[90%] mx-auto bg-[#65686c]" />
 
