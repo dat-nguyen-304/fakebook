@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { ChangeEvent } from 'react';
 
 interface SelectProps {
   options: { value: string; label: string }[];
   value?: string;
-  onChange: (value: string) => void;
+  onChange: (e: ChangeEvent<HTMLSelectElement>) => void;
   placeholder?: string;
   disabled?: boolean;
 }
@@ -13,7 +13,7 @@ const Select: React.FC<SelectProps> = ({ options, value, onChange, placeholder =
     <div className="relative w-full mb-4">
       <select
         value={value}
-        onChange={e => onChange(e.target.value)}
+        onChange={onChange}
         disabled={disabled}
         className="w-full p-3 border border-gray-300 text-[#d8dbdf] rounded-lg shadow-sm focus:outline-none focus:border-blue-500 transition-all bg-transparent appearance-none cursor-pointer"
       >
