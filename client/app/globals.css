@@ -84,6 +84,10 @@ input {
   width: 16px;
 }
 
+.modal ::-webkit-scrollbar {
+  width: 8px;
+}
+
 /* Track */
 ::-webkit-scrollbar-track {
   background: #424242;

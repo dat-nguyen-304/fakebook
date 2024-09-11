@@ -7,6 +7,8 @@ import { useUser } from '@hooks/client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMe } from '@hooks/api/auth';
+import { useOpenModal } from '@hooks/client/useOpenModal';
+import cn from 'classnames';
 
 interface HeaderProps {}
 const Header: React.FC<HeaderProps> = () => {
@@ -16,6 +18,7 @@ const Header: React.FC<HeaderProps> = () => {
   const router = useRouter();
 
   const { data: me, isSuccess, isError, isPending } = useMe();
+  const { modalOpen } = useOpenModal();
 
   useEffect(() => {
     if (!user) {
@@ -30,13 +33,25 @@ const Header: React.FC<HeaderProps> = () => {
   }, [user, me, isSuccess, isError]);
 
   if (isLoading)
-    return <div className="grid grid-cols-3 px-2 h-[56px] bg-[#242526] fixed top-0 left-0 right-0 header" />;
+    return (
+      <div
+        className={cn(
+          'grid grid-cols-3 px-2 h-[56px] bg-[#242526] fixed top-0 left-0 header',
+          modalOpen ? 'right-[16px]' : 'right-0'
+        )}
+      />
+    );
   return (
-    <div className="grid grid-cols-3 px-2 h-[56px] bg-[#242526] fixed top-0 left-0 right-0 header z-10">
+    <header
+      className={cn(
+        'grid grid-cols-3 px-2 h-[56px] bg-[#242526] fixed top-0 left-0 shadow-border-b z-10',
+        modalOpen ? 'right-[16px]' : 'right-0'
+      )}
+    >
       <HeaderSearch />
       <HeaderTabs />
       <HeaderNotification />
-    </div>
+    </header>
   );
 };
 
