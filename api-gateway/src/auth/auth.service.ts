@@ -19,7 +19,7 @@ export class AuthService implements OnModuleInit {
     this.userService = this.client.getService<UserServiceClient>(USER_SERVICE_NAME);
   }
 
-  async create(createUserDto: CreateUserDto) {
+  async register(createUserDto: CreateUserDto) {
     const response = await lastValueFrom(this.userService.createUser(createUserDto));
     if (!response.success) throw new BadRequestException(response.message);
     return response.data;
