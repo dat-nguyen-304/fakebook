@@ -1,4 +1,4 @@
-import { CreateUserDto, LoginDto, UpdateUserDto, UserResponse } from '@proto/auth';
+import { CreateUserDto, Gender, LoginDto, UpdateUserDto, UserResponse } from '@proto/auth';
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { ConfigService } from '@nestjs/config';
@@ -109,7 +109,11 @@ export class UserService {
     try {
       const result = await session.run('MATCH (user:USER {id : $id}) RETURN user;', { id });
       if (result.records.length === 0) return null;
-      return result.records[0].get(0).properties;
+      return {
+        success: true,
+        message: 'success',
+        data: result.records[0].get(0).properties
+      };
     } catch (error) {
       console.log({ error });
     } finally {
@@ -117,11 +121,25 @@ export class UserService {
     }
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
-    return {
-      data: null,
-      success: true,
-      message: 'Coming soon ...'
-    };
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const session = this.driver.session();
+    const setClauses = Object.keys(updateUserDto)
+      .map(key => `user.${key} = $${key}`)
+      .join(', ');
+    const query = `MATCH (user:USER {id: $id}) SET ${setClauses} RETURN user`;
+
+    try {
+      const result = await session.run(query, { id, ...updateUserDto });
+      if (result.records.length === 0) return null;
+      return {
+        success: true,
+        message: 'success',
+        data: result.records[0].get(0).properties
+      };
+    } catch (error) {
+      console.log({ error });
+    } finally {
+      session.close();
+    }
   }
 }

@@ -15,6 +15,39 @@ export const protobufPackage = "user";
  * npx protoc --plugin=protoc-gen-ts_proto=.\\node_modules\\.bin\\protoc-gen-ts_proto.cmd --ts_proto_out=./ --ts_proto_opt=nestJs=true ./proto/auth.proto
  */
 
+export enum Gender {
+  MALE = 0,
+  FEMALE = 1,
+  UNRECOGNIZED = -1,
+}
+
+export interface User {
+  id: string;
+  username: string;
+  password: string;
+  fullName: string;
+  isOnline: boolean;
+  biography: string;
+  gender: Gender;
+  avatar: string;
+  cover: string;
+  work: string;
+  school: string;
+  hometown: string;
+  living: string;
+  followers: number;
+  lastOnline: number;
+  createdDate: number;
+  updatedDate: number;
+}
+
+export interface Empty {
+}
+
+export interface Users {
+  users: User[];
+}
+
 export interface UserResponse {
   success: boolean;
   message: string;
@@ -32,48 +65,38 @@ export interface PaginationDto {
   skip: number;
 }
 
+export interface UpdateUserRequest {
+  userId: string;
+  updateUserDto: UpdateUserDto | undefined;
+}
+
 export interface UpdateUserDto {
-  id: string;
-  password: string;
-  fullName: string;
-  gender: string;
-  biography: string;
+  password?: string | undefined;
+  fullName?: string | undefined;
+  biography?: string | undefined;
+  gender?: Gender | undefined;
+  avatar?: string | undefined;
+  cover?: string | undefined;
+  work?: string | undefined;
+  school?: string | undefined;
+  hometown?: string | undefined;
+  living?: string | undefined;
 }
 
 export interface FindOneUserDto {
   id: string;
 }
 
-export interface Empty {
-}
-
-export interface Users {
-  users: User[];
-}
-
 export interface CreateUserDto {
   username: string;
   fullName: string;
-  gender: string;
+  gender: Gender;
   password: string;
 }
 
 export interface LoginDto {
   username: string;
   password: string;
-}
-
-export interface User {
-  id: string;
-  username: string;
-  password: string;
-  fullName: string;
-  isOnline: boolean;
-  biography: string;
-  gender: string;
-  lastOnline: number;
-  createdDate: number;
-  updatedDate: number;
 }
 
 export const USER_PACKAGE_NAME = "user";
@@ -87,7 +110,7 @@ export interface UserServiceClient {
 
   findOneUser(request: FindOneUserDto): Observable<UserResponse>;
 
-  updateUser(request: UpdateUserDto): Observable<UserResponse>;
+  updateUser(request: UpdateUserRequest): Observable<UserResponse>;
 }
 
 export interface UserServiceController {
@@ -99,7 +122,7 @@ export interface UserServiceController {
 
   findOneUser(request: FindOneUserDto): Promise<UserResponse> | Observable<UserResponse> | UserResponse;
 
-  updateUser(request: UpdateUserDto): Promise<UserResponse> | Observable<UserResponse> | UserResponse;
+  updateUser(request: UpdateUserRequest): Promise<UserResponse> | Observable<UserResponse> | UserResponse;
 }
 
 export function UserServiceControllerMethods() {

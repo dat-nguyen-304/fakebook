@@ -3,10 +3,10 @@ import { UserService } from '@user/user.service';
 import {
   UserServiceController,
   CreateUserDto,
-  UpdateUserDto,
   UserServiceControllerMethods,
   FindOneUserDto,
-  LoginDto
+  LoginDto,
+  UpdateUserRequest
 } from '@proto/auth';
 
 @Controller()
@@ -29,7 +29,7 @@ export class UserController implements UserServiceController {
     return this.userService.findOne(findOneUserDto.id);
   }
 
-  updateUser(updateUserDto: UpdateUserDto) {
-    return this.userService.update(updateUserDto.id, updateUserDto);
+  updateUser(updateUserRequest: UpdateUserRequest) {
+    return this.userService.update(updateUserRequest.userId, updateUserRequest.updateUserDto);
   }
 }

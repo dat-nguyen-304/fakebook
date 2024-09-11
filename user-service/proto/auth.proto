@@ -4,12 +4,43 @@ syntax = "proto3";
 
 package user;
 
+message User {
+    string id = 1;
+    string username = 2;
+    string password = 3;
+    string fullName = 4;
+    bool isOnline = 5;
+    string biography = 6;
+    Gender gender = 7;
+    string avatar = 8;
+    string cover = 9;
+    string work = 10;
+    string school = 11;
+    string hometown = 12;
+    string living = 13;
+    int32 followers = 14;
+    int64  lastOnline = 15;
+    int64  createdDate = 16;
+    int64  updatedDate = 17;
+}
+
+enum Gender {
+    MALE = 0;
+    FEMALE = 1;
+}
+
+message Empty {};
+  
+message Users {
+    repeated User users = 1;
+}
+
 service UserService {
     rpc CreateUser (CreateUserDto) returns (UserResponse) {}
     rpc Login (LoginDto) returns (UserResponse) {}
     rpc FindAllUsers (Empty) returns (UsersResponse) {}
     rpc FindOneUser (FindOneUserDto) returns (UserResponse) {}
-    rpc UpdateUser (UpdateUserDto) returns (UserResponse) {}
+    rpc UpdateUser (UpdateUserRequest) returns (UserResponse) {}
 }
 
 message UserResponse {
@@ -28,46 +59,37 @@ message PaginationDto {
     int32 page = 1;
     int32 skip = 2;
 }
+
+message UpdateUserRequest {
+    string userId = 1;
+    UpdateUserDto updateUserDto = 2;
+}
   
 message UpdateUserDto {
-    string id = 1;
-    string password = 3;
-    string fullName = 4;
-    string gender = 5;
-    string biography = 6;
+    optional string password = 1;
+    optional string fullName = 2;
+    optional string biography = 3;
+    optional Gender gender = 4;
+    optional string avatar = 5;
+    optional string cover = 6;
+    optional string work = 7;
+    optional string school = 8;
+    optional string hometown = 9;
+    optional string living = 10;
 }
   
 message FindOneUserDto {
     string id = 1;
 }
-  
-message Empty {};
-  
-message Users {
-    repeated User users = 1;
-}
 
 message CreateUserDto {
     string username = 1;
-    string fullName = 3;
-    string gender = 8;
-    string password = 2;
+    string fullName = 2;
+    Gender gender = 3;
+    string password = 4;
 }
 
 message LoginDto {
     string username = 1;
     string password = 2;
-}
-
-message User {
-    string id = 1;
-    string username = 2;
-    string password = 3;
-    string fullName = 4;
-    bool isOnline = 6;
-    string biography = 7;
-    string gender = 8;
-    int64  lastOnline = 9;
-    int64  createdDate = 10;
-    int64  updatedDate = 11;
 }
