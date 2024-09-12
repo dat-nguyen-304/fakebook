@@ -75,12 +75,20 @@ export interface UpdateUserDto {
   fullName?: string | undefined;
   biography?: string | undefined;
   gender?: Gender | undefined;
-  avatar?: string | undefined;
-  cover?: string | undefined;
   work?: string | undefined;
   school?: string | undefined;
   hometown?: string | undefined;
   living?: string | undefined;
+}
+
+export interface UpdateUserImageRequest {
+  userId: string;
+  updateUserImageDto: UpdateUserImageDto | undefined;
+}
+
+export interface UpdateUserImageDto {
+  url: string;
+  type: string;
 }
 
 export interface FindOneUserDto {
@@ -111,6 +119,8 @@ export interface UserServiceClient {
   findOneUser(request: FindOneUserDto): Observable<UserResponse>;
 
   updateUser(request: UpdateUserRequest): Observable<UserResponse>;
+
+  updateUserImage(request: UpdateUserImageRequest): Observable<UserResponse>;
 }
 
 export interface UserServiceController {
@@ -123,11 +133,20 @@ export interface UserServiceController {
   findOneUser(request: FindOneUserDto): Promise<UserResponse> | Observable<UserResponse> | UserResponse;
 
   updateUser(request: UpdateUserRequest): Promise<UserResponse> | Observable<UserResponse> | UserResponse;
+
+  updateUserImage(request: UpdateUserImageRequest): Promise<UserResponse> | Observable<UserResponse> | UserResponse;
 }
 
 export function UserServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["createUser", "login", "findAllUsers", "findOneUser", "updateUser"];
+    const grpcMethods: string[] = [
+      "createUser",
+      "login",
+      "findAllUsers",
+      "findOneUser",
+      "updateUser",
+      "updateUserImage",
+    ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("UserService", method)(constructor.prototype[method], method, descriptor);

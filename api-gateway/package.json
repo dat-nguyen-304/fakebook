@@ -17,7 +17,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "proto:gen": "npx protoc --plugin=protoc-gen-ts_proto=.\\node_modules\\.bin\\protoc-gen-ts_proto.cmd --ts_proto_out=./ --ts_proto_opt=nestJs=true ./proto/auth.proto"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.9.14",
@@ -28,12 +29,15 @@
     "@nestjs/jwt": "^10.2.0",
     "@nestjs/microservices": "^10.3.0",
     "@nestjs/passport": "^10.0.3",
-    "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/platform-express": "^10.4.1",
     "@prisma/client": "^5.8.1",
+    "@types/multer": "^1.4.12",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "cloudinary": "^1.41.3",
     "cookie-parser": "^1.4.6",
     "ioredis": "^5.4.1",
+    "multer": "^1.4.5-lts.1",
     "passport": "^0.7.0",
     "passport-custom": "^1.1.1",
     "passport-jwt": "^4.0.1",
