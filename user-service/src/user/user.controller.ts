@@ -6,7 +6,8 @@ import {
   UserServiceControllerMethods,
   FindOneUserDto,
   LoginDto,
-  UpdateUserRequest
+  UpdateUserRequest,
+  UpdateUserImageRequest
 } from '@proto/auth';
 
 @Controller()
@@ -31,5 +32,9 @@ export class UserController implements UserServiceController {
 
   updateUser(updateUserRequest: UpdateUserRequest) {
     return this.userService.update(updateUserRequest.userId, updateUserRequest.updateUserDto);
+  }
+
+  updateUserImage(updateUserImageRequest: UpdateUserImageRequest) {
+    return this.userService.updateImage(updateUserImageRequest.userId, updateUserImageRequest.updateUserImageDto);
   }
 }

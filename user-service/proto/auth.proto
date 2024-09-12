@@ -41,6 +41,7 @@ service UserService {
     rpc FindAllUsers (Empty) returns (UsersResponse) {}
     rpc FindOneUser (FindOneUserDto) returns (UserResponse) {}
     rpc UpdateUser (UpdateUserRequest) returns (UserResponse) {}
+    rpc UpdateUserImage (UpdateUserImageRequest) returns (UserResponse) {}
 }
 
 message UserResponse {
@@ -70,12 +71,20 @@ message UpdateUserDto {
     optional string fullName = 2;
     optional string biography = 3;
     optional Gender gender = 4;
-    optional string avatar = 5;
-    optional string cover = 6;
-    optional string work = 7;
-    optional string school = 8;
-    optional string hometown = 9;
-    optional string living = 10;
+    optional string work = 5;
+    optional string school = 6;
+    optional string hometown = 7;
+    optional string living = 8;
+}
+
+message UpdateUserImageRequest {
+    string userId = 1;
+    UpdateUserImageDto updateUserImageDto = 2;
+}
+
+message UpdateUserImageDto {
+    string url = 1;
+    string type = 2;
 }
   
 message FindOneUserDto {

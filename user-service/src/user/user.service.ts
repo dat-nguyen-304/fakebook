@@ -1,4 +1,4 @@
-import { CreateUserDto, Gender, LoginDto, UpdateUserDto, UserResponse } from '@proto/auth';
+import { CreateUserDto, Gender, LoginDto, UpdateUserDto, UpdateUserImageDto, UserResponse } from '@proto/auth';
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { ConfigService } from '@nestjs/config';
@@ -39,7 +39,12 @@ export class UserService {
           data: null
         };
       const addedResult = await session.run(
-        'CREATE (user: USER {id: $uuid, username: $username, fullName: $fullName, password: $password, gender: $gender, createdDate: timestamp(), updatedDate: timestamp()}) RETURN user;',
+        `
+          CREATE (user: USER 
+          {id: $uuid, username: $username, fullName: $fullName, password: $password, gender: $gender, 
+          createdDate: timestamp(), updatedDate: timestamp()}) 
+          RETURN user;
+        `,
         {
           uuid: randomUUID(),
           username: createUserDto.username,
@@ -140,6 +145,48 @@ export class UserService {
       console.log({ error });
     } finally {
       session.close();
+    }
+  }
+
+  async updateImage(userId: string, updateUserImageDto: UpdateUserImageDto) {
+    const { url, type } = updateUserImageDto;
+    const session = this.driver.session();
+
+    try {
+      // Step 1: Create or update the Image node
+      await session.run(
+        `
+          CREATE (img:IMAGE {url: $url, type: $type, createdDate: timestamp()})
+          RETURN img
+        `,
+        { url, type }
+      );
+
+      // Step 2: Update the User node
+      const updateUserResult = await session.run(
+        `
+          MATCH (u:USER {id: $userId})
+          MATCH (img:IMAGE {url: $url})
+          MERGE (u)-[r:HAS_${type.toUpperCase()}]->(img)
+          ON CREATE SET r.createdAt = timestamp()
+          SET u.${type} = img.url, u.updatedDate = timestamp()
+          RETURN u
+        `,
+        { userId, url, type }
+      );
+
+      if (updateUserResult.records.length === 0) return null;
+
+      return {
+        success: true,
+        message: 'success',
+        data: updateUserResult.records[0].get('u').properties
+      };
+    } catch (error) {
+      console.error('Error updating user image:', error);
+      throw error;
+    } finally {
+      await session.close();
     }
   }
 }
