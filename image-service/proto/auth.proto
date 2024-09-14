@@ -1,0 +1,104 @@
+// npm i ts-proto
+// npx protoc --plugin=protoc-gen-ts_proto=.\\node_modules\\.bin\\protoc-gen-ts_proto.cmd --ts_proto_out=./ --ts_proto_opt=nestJs=true ./proto/auth.proto
+syntax = "proto3";
+
+package user;
+
+message User {
+    string id = 1;
+    string username = 2;
+    string password = 3;
+    string fullName = 4;
+    bool isOnline = 5;
+    string biography = 6;
+    Gender gender = 7;
+    string avatar = 8;
+    string cover = 9;
+    string work = 10;
+    string school = 11;
+    string hometown = 12;
+    string living = 13;
+    int32 followers = 14;
+    int64  lastOnline = 15;
+    int64  createdDate = 16;
+    int64  updatedDate = 17;
+}
+
+enum Gender {
+    MALE = 0;
+    FEMALE = 1;
+}
+
+message Empty {};
+  
+message Users {
+    repeated User users = 1;
+}
+
+service UserService {
+    rpc CreateUser (CreateUserDto) returns (UserResponse) {}
+    rpc Login (LoginDto) returns (UserResponse) {}
+    rpc FindAllUsers (Empty) returns (UsersResponse) {}
+    rpc FindOneUser (FindOneUserDto) returns (UserResponse) {}
+    rpc UpdateUser (UpdateUserRequest) returns (UserResponse) {}
+    rpc UpdateUserImage (UpdateUserImageRequest) returns (UserResponse) {}
+}
+
+message UserResponse {
+    bool success = 1;
+    string message = 2;
+    User data = 3;
+}
+
+message UsersResponse {
+    bool success = 1;
+    string message = 2;
+    Users data = 3;
+}
+
+message PaginationDto {
+    int32 page = 1;
+    int32 skip = 2;
+}
+
+message UpdateUserRequest {
+    string userId = 1;
+    UpdateUserDto updateUserDto = 2;
+}
+  
+message UpdateUserDto {
+    optional string password = 1;
+    optional string fullName = 2;
+    optional string biography = 3;
+    optional Gender gender = 4;
+    optional string work = 5;
+    optional string school = 6;
+    optional string hometown = 7;
+    optional string living = 8;
+}
+
+message UpdateUserImageRequest {
+    string userId = 1;
+    UpdateUserImageDto updateUserImageDto = 2;
+}
+
+message UpdateUserImageDto {
+    string url = 1;
+    string type = 2;
+}
+  
+message FindOneUserDto {
+    string id = 1;
+}
+
+message CreateUserDto {
+    string username = 1;
+    string fullName = 2;
+    Gender gender = 3;
+    string password = 4;
+}
+
+message LoginDto {
+    string username = 1;
+    string password = 2;
+}

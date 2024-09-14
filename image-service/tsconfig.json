@@ -21,7 +21,8 @@
       "@cloudinary/*": ["./src/cloudinary/*"],
       "@kafka/*": ["./src/kafka/*"],
       "@image/*": ["./src/image/*"],
-      "@src/*": ["./src/*"]
+      "@src/*": ["./src/*"],
+      "@proto/*": ["./proto/*"]
     }
   }
 }
