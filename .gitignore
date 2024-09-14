@@ -1,11 +1,17 @@
-# dependencies
-/client/node_modules
 /api-gateway/dist
 /api-gateway/node_modules
+/api-gateway/.env
+
 /user-service/dist
 /user-service/node_modules
+/user-service/.env
+
+/image-service/dist
+/image-service/node_modules
+/image-service/.env
 
 # next.js
+/client/node_modules
 /client/.next/
 /client/out/
 
