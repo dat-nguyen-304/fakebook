@@ -1,16 +1,20 @@
-import { CreateUserDto, Gender, LoginDto, UpdateUserDto, UpdateUserImageDto, UserResponse } from '@proto/auth';
+import { CreateUserDto, LoginDto, UpdateUserDto, UpdateUserImageDto, UserResponse } from '@proto/auth';
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import neo4j, { Driver } from 'neo4j-driver';
 import * as argon from 'argon2';
+import formattedResponse from './response.format';
 
 @Injectable()
 export class UserService {
-  private readonly driver: Driver;
+  private driver: Driver;
 
   constructor(private readonly configService: ConfigService) {
-    this.driver = neo4j.driver('bolt://localhost:7687', neo4j.auth.basic('neo4j', '12345678'));
+    this.driver = neo4j.driver(
+      this.configService.get('NEO4J_HOST'),
+      neo4j.auth.basic(this.configService.get('NEO4J_USERNAME'), this.configService.get('NEO4J_PASSWORD'))
+    );
   }
 
   async findByUsername(username: string) {
@@ -19,10 +23,11 @@ export class UserService {
       const result = await session.run('MATCH (user:USER {username : $username}) RETURN user;', {
         username
       });
-      if (result.records.length === 0) return null;
-      return result.records[0].get(0).properties;
+      if (result.records.length === 0) return formattedResponse('fail');
+      return formattedResponse('success', undefined, result.records[0].get(0).properties);
     } catch (error) {
       console.log({ error });
+      return formattedResponse('fail');
     } finally {
       session.close();
     }
@@ -31,8 +36,8 @@ export class UserService {
   async create(createUserDto: CreateUserDto): Promise<UserResponse> {
     const session = this.driver.session();
     try {
-      const checkUser = await this.findByUsername(createUserDto.username);
-      if (checkUser)
+      const foundUser = await this.findByUsername(createUserDto.username);
+      if (!foundUser.success)
         return {
           success: false,
           message: 'Username already exists',
@@ -54,16 +59,15 @@ export class UserService {
         }
       );
 
-      const newUser = addedResult.records[0].get(0).properties;
+      const records = addedResult.records;
+      if (!records.length) return formattedResponse('fail');
+
+      const newUser = records[0].get(0).properties;
       delete newUser.password;
-      return {
-        message: 'Success',
-        success: true,
-        data: newUser
-      };
+      return formattedResponse('success', undefined, newUser);
     } catch (error) {
       console.log({ error });
-      session.close();
+      return formattedResponse('fail');
     } finally {
       session.close();
     }
@@ -72,55 +76,37 @@ export class UserService {
   async login(loginDto: LoginDto) {
     const session = this.driver.session();
     try {
-      const user = await this.findByUsername(loginDto.username);
-      if (!user)
-        return {
-          success: false,
-          message: 'Username does not exist',
-          data: null
-        };
-
+      const foundUser = await this.findByUsername(loginDto.username);
+      if (!foundUser.success) return formattedResponse('fail', 'Username does not exist');
+      const user = foundUser.data;
       const pwMatches = await argon.verify(user.password, loginDto.password);
-      if (!pwMatches)
-        return {
-          success: false,
-          message: 'Password is incorrect',
-          data: null
-        };
+      if (!pwMatches) return formattedResponse('fail', 'Password is incorrect');
 
       delete user.password;
-      return {
-        success: true,
-        message: 'success',
-        data: user
-      };
+      return formattedResponse('success', undefined, user);
     } catch (error) {
       console.log({ error });
+      return formattedResponse('fail');
     } finally {
       session.close();
     }
   }
 
   findAll() {
-    return {
-      data: null,
-      success: true,
-      message: 'Coming soon ...'
-    };
+    return formattedResponse('success', 'Coming soon...', null);
   }
 
   async findOne(id: string) {
     const session = this.driver.session();
     try {
       const result = await session.run('MATCH (user:USER {id : $id}) RETURN user;', { id });
-      if (result.records.length === 0) return null;
-      return {
-        success: true,
-        message: 'success',
-        data: result.records[0].get(0).properties
-      };
+
+      const records = result.records;
+      if (records.length === 0) return formattedResponse('fail');
+      return formattedResponse('success', undefined, records[0].get(0).properties);
     } catch (error) {
       console.log({ error });
+      return formattedResponse('fail');
     } finally {
       session.close();
     }
@@ -135,14 +121,13 @@ export class UserService {
 
     try {
       const result = await session.run(query, { id, ...updateUserDto });
-      if (result.records.length === 0) return null;
-      return {
-        success: true,
-        message: 'success',
-        data: result.records[0].get(0).properties
-      };
+
+      const records = result.records;
+      if (records.length === 0) return formattedResponse('fail');
+      return formattedResponse('success', undefined, records[0].get(0).properties);
     } catch (error) {
       console.log({ error });
+      return formattedResponse('fail');
     } finally {
       session.close();
     }
@@ -153,38 +138,21 @@ export class UserService {
     const session = this.driver.session();
 
     try {
-      // Step 1: Create or update the Image node
-      await session.run(
-        `
-          CREATE (img:IMAGE {url: $url, type: $type, createdDate: timestamp()})
-          RETURN img
-        `,
-        { url, type }
-      );
-
-      // Step 2: Update the User node
-      const updateUserResult = await session.run(
+      const result = await session.run(
         `
           MATCH (u:USER {id: $userId})
-          MATCH (img:IMAGE {url: $url})
-          MERGE (u)-[r:HAS_${type.toUpperCase()}]->(img)
-          ON CREATE SET r.createdAt = timestamp()
-          SET u.${type} = img.url, u.updatedDate = timestamp()
+          SET u.${type} = $url, u.updatedDate = timestamp()
           RETURN u
         `,
         { userId, url, type }
       );
+      const records = result.records;
+      if (records.length === 0) return formattedResponse('fail');
 
-      if (updateUserResult.records.length === 0) return null;
-
-      return {
-        success: true,
-        message: 'success',
-        data: updateUserResult.records[0].get('u').properties
-      };
+      return formattedResponse('success', undefined, records[0].get('u').properties);
     } catch (error) {
-      console.error('Error updating user image:', error);
-      throw error;
+      console.error({ error });
+      return formattedResponse('fail');
     } finally {
       await session.close();
     }
