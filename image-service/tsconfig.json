@@ -18,6 +18,9 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
+      "@cloudinary/*": ["./src/cloudinary/*"],
+      "@kafka/*": ["./src/kafka/*"],
+      "@image/*": ["./src/image/*"],
       "@src/*": ["./src/*"]
     }
   }

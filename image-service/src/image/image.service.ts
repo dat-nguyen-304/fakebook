@@ -1,15 +1,19 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { Kafka, Producer, Consumer, Partitioners } from 'kafkajs';
-import { CloudinaryService } from './cloudinary.service';
+import { CloudinaryService } from '@cloudinary/cloudinary.service';
+import { KafkaAdminService } from '@kafka/kafka.service';
 
 @Injectable()
-export class KafkaService implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(KafkaService.name);
+export class ImageService implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(ImageService.name);
   private kafka: Kafka;
   private producer: Producer;
   private consumer: Consumer;
 
-  constructor(private cloudinaryService: CloudinaryService) {
+  constructor(
+    private cloudinaryService: CloudinaryService,
+    private readonly kafkaAdminService: KafkaAdminService
+  ) {
     this.kafka = new Kafka({
       clientId: 'image-service',
       brokers: ['localhost:9092', 'localhost:9093']
@@ -19,10 +23,12 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleInit() {
+    await this.checkPartitionStatus('image-upload');
     await this.producer.connect();
     await this.consumer.connect();
     await this.consumer.subscribe({
-      topic: 'image-upload'
+      topic: 'image-upload',
+      fromBeginning: true
     });
     this.logger.log('Connected to Kafka');
 
@@ -55,6 +61,15 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
       this.logger.log(`Message sent to topic ${topic}: ${JSON.stringify(message)}`);
     } catch (error) {
       this.logger.error('Error sending message:', error);
+    }
+  }
+
+  async checkPartitionStatus(topic: string) {
+    const topicExists = await this.kafkaAdminService.topicExists(topic);
+    if (!topicExists) {
+      await this.kafkaAdminService.createTopic(topic);
+    } else {
+      this.logger.log(`Topic ${topic} is ready`);
     }
   }
 }
