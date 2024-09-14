@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
-import { AuthController } from '@auth/auth.controller';
+import { JwtModule } from '@nestjs/jwt';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
-import { AuthService } from '@auth/auth.service';
 import { USER_PACKAGE_NAME } from '@proto/auth';
+import { AuthController } from '@auth/auth.controller';
+import { AuthService } from '@auth/auth.service';
 import { JwtStrategy } from '@auth/strategy/index';
-import { RedisModule } from '@redis/redis.module';
-import { TokenModule } from '@token/token.module';
+import { TokenService } from '@auth/token.service';
+import { RedisService } from '@auth/redis.service';
 
 @Module({
   imports: [
@@ -20,10 +21,9 @@ import { TokenModule } from '@token/token.module';
         }
       }
     ]),
-    RedisModule,
-    TokenModule
+    JwtModule.register({})
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, TokenService, RedisService],
   controllers: [AuthController]
 })
 export class AuthModule {}

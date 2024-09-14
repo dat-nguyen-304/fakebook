@@ -2,8 +2,8 @@ import { BadRequestException, Inject, Injectable, OnModuleInit } from '@nestjs/c
 import { CreateUserDto, UserServiceClient, USER_SERVICE_NAME, LoginDto } from '@proto/auth';
 import { ClientGrpc } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
-import { RedisService } from '@src/redis/redis.service';
-import { TokenService } from '@src/token/token.service';
+import { RedisService } from '@auth/redis.service';
+import { TokenService } from '@auth/token.service';
 
 @Injectable()
 export class AuthService implements OnModuleInit {

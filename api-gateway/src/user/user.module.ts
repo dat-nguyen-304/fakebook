@@ -4,8 +4,7 @@ import { UserController } from '@user/user.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { USER_PACKAGE_NAME } from '@proto/auth';
 import { join } from 'path';
-import { ImageModule } from '@src/image/image.module';
-import { ImageService } from '@src/image/image.service';
+import { KafkaService } from './kafka.service';
 
 @Module({
   imports: [
@@ -18,10 +17,9 @@ import { ImageService } from '@src/image/image.service';
           protoPath: join(__dirname, '../../../proto/auth.proto')
         }
       }
-    ]),
-    ImageModule
+    ])
   ],
-  providers: [UserService, ImageService],
+  providers: [UserService, KafkaService],
   controllers: [UserController]
 })
 export class UserModule {}

@@ -32,6 +32,6 @@ export class UserController {
     @UploadedFile() image: Express.Multer.File,
     @Body() updateUserImage: UpdateUserImageDto //used for post newfeeds
   ) {
-    return this.userService.updateImage(userId, image);
+    return this.userService.updateImage(userId, image, updateUserImage.type);
   }
 }

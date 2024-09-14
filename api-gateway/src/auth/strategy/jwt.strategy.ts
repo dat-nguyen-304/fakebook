@@ -5,8 +5,8 @@ import { ClientGrpc } from '@nestjs/microservices';
 import { USER_SERVICE_NAME, UserServiceClient } from '@proto/auth';
 import { lastValueFrom } from 'rxjs';
 import { Request } from 'express';
-import { RedisService } from '@src/redis/redis.service';
-import { TokenService } from '@token/token.service';
+import { RedisService } from '@auth/redis.service';
+import { TokenService } from '@auth/token.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(CustomStrategy, 'jwt') implements OnModuleInit {

@@ -1,15 +1,8 @@
 import { BadRequestException, Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import {
-  UserServiceClient,
-  USER_SERVICE_NAME,
-  UpdateUserDto,
-  UpdateUserRequest,
-  UpdateUserImageRequest
-} from '@proto/auth';
+import { UserServiceClient, USER_SERVICE_NAME, UpdateUserDto, UpdateUserRequest } from '@proto/auth';
 import { ClientGrpc } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
-import { ImageService } from '@src/image/image.service';
-import { UpdateUserImageDto } from '@proto/auth';
+import { KafkaService } from './kafka.service';
 
 @Injectable()
 export class UserService implements OnModuleInit {
@@ -17,7 +10,7 @@ export class UserService implements OnModuleInit {
 
   constructor(
     @Inject('user') private client: ClientGrpc,
-    private imageService: ImageService
+    private kafkaService: KafkaService
   ) {}
 
   onModuleInit() {
@@ -31,12 +24,8 @@ export class UserService implements OnModuleInit {
     return response.data;
   }
 
-  async updateImage(userId: string, image: Express.Multer.File) {
-    const result = await this.imageService.uploadImage(image);
-    const updateUserImageDto: UpdateUserImageDto = { url: result.secure_url, type: 'avatar' };
-    const updateUserImageRequest: UpdateUserImageRequest = { userId, updateUserImageDto };
-    const response = await lastValueFrom(this.grpcService.updateUserImage(updateUserImageRequest));
-    if (!response.success) throw new BadRequestException(response.message);
-    return response.data;
+  async updateImage(userId: string, image: Express.Multer.File, type: string) {
+    this.kafkaService.sendImageUploadMessage({ file: image.buffer.toString('base64'), userId, type });
+    return `Uploading ${type} ...`;
   }
 }
