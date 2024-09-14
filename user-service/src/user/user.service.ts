@@ -1,16 +1,20 @@
 import { CreateUserDto, LoginDto, UpdateUserDto, UpdateUserImageDto, UserResponse } from '@proto/auth';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import neo4j, { Driver } from 'neo4j-driver';
 import * as argon from 'argon2';
 import formattedResponse from './response.format';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class UserService {
   private driver: Driver;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    @Inject('WS_SERVICE') private readonly wsClient: ClientProxy
+  ) {
     this.driver = neo4j.driver(
       this.configService.get('NEO4J_HOST'),
       neo4j.auth.basic(this.configService.get('NEO4J_USERNAME'), this.configService.get('NEO4J_PASSWORD'))
@@ -148,7 +152,7 @@ export class UserService {
       );
       const records = result.records;
       if (records.length === 0) return formattedResponse('fail');
-
+      this.wsClient.emit('imageReady', { userId, imageUrl: url });
       return formattedResponse('success', undefined, records[0].get('u').properties);
     } catch (error) {
       console.error({ error });
