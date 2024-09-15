@@ -50,7 +50,7 @@ export class UserService {
       const addedResult = await session.run(
         `
           CREATE (user: USER 
-          {id: $uuid, username: $username, fullName: $fullName, password: $password, gender: $gender, 
+          {id: $uuid, username: $username, fullName: $fullName, password: $password, gender: $gender, avatar: $avatar, cover: $cover,
           createdDate: timestamp(), updatedDate: timestamp()}) 
           RETURN user;
         `,
@@ -59,7 +59,9 @@ export class UserService {
           username: createUserDto.username,
           fullName: createUserDto.fullName,
           gender: createUserDto.gender,
-          password: await argon.hash(createUserDto.password)
+          password: await argon.hash(createUserDto.password),
+          avatar: this.configService.get('DEFAULT_AVATAR_URL'),
+          cover: this.configService.get('DEFAULT_COVER_URL')
         }
       );
 
