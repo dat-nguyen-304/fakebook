@@ -10,16 +10,19 @@
 /image-service/node_modules
 /image-service/.env
 
+/ws-service/dist
+/ws-service/node_modules
+/ws-service/.env
+
+
 # next.js
 /client/node_modules
 /client/.next/
 /client/out/
+/client/.env
 
 # production
 /client/build
-
-# local env files
-/client/.env
 
 # typescript
 *.tsbuildinfo
