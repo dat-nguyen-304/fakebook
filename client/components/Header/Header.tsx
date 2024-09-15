@@ -3,7 +3,6 @@
 import HeaderNotification from './HeaderNotification';
 import HeaderTabs from './HeaderTabs';
 import HeaderSearch from './HeaderSearch';
-import { useUser } from '@hooks/client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMe } from '@hooks/api/auth';
@@ -14,23 +13,19 @@ interface HeaderProps {}
 const Header: React.FC<HeaderProps> = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const { user, onChangeUser } = useUser();
   const router = useRouter();
 
-  const { data: me, isSuccess, isError, isPending } = useMe();
+  const { data: user, isSuccess, isError, isPending } = useMe();
   const { modalOpen } = useOpenModal();
 
   useEffect(() => {
     if (!user) {
-      if (isSuccess) {
-        onChangeUser(me.data);
-      } else if (isError) {
-        onChangeUser(null);
+      if (isError) {
         setIsLoading(true);
         return router.replace('/login');
       } else if (isPending) setIsLoading(true);
     } else setIsLoading(false);
-  }, [user, me, isSuccess, isError]);
+  }, [user, isSuccess, isError]);
 
   if (isLoading)
     return (
@@ -41,6 +36,7 @@ const Header: React.FC<HeaderProps> = () => {
         )}
       />
     );
+  if (!user) return null;
   return (
     <header
       className={cn(
@@ -50,7 +46,7 @@ const Header: React.FC<HeaderProps> = () => {
     >
       <HeaderSearch />
       <HeaderTabs />
-      <HeaderNotification />
+      <HeaderNotification user={user} />
     </header>
   );
 };

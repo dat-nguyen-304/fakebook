@@ -11,8 +11,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = () => {
   const [isLoadingCover, setIsLoadingCover] = useState<boolean>(false);
 
   const toastIdRef = useRef<Id>();
-  const { data: me, refetch } = useMe();
-  const user = me?.data;
+  const { data: user, refetch } = useMe();
 
   const handleToast = (action: 'loading' | 'dismiss' | 'error', message?: string) => {
     if (action === 'loading') {

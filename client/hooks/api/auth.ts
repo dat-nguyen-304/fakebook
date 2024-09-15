@@ -48,11 +48,11 @@ export const useLogout = () => {
 };
 
 export const useMe = () => {
-  return useQuery<APIResponse<User>, ErrorResponse>({
+  return useQuery<User, ErrorResponse>({
     queryKey: ['me'],
     queryFn: async () => {
       const response: APIResponse<User> = await axiosClient.get('/auth/me');
-      return response;
+      return response.data;
     }
   });
 };

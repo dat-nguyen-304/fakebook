@@ -6,38 +6,34 @@ import { useEffect, useRef, useState } from 'react';
 import Textarea from '@components/common/TextArea';
 import cn from 'classnames';
 import EditDetailsModal from './EditDetailsModal';
-import { useUser } from '@hooks/client';
 import { useUpdateUser } from '@hooks/api/user';
 import { Id, toast } from 'react-toastify';
-import { useMe } from '@hooks/api/auth';
+import { ErrorResponse, User } from '@types';
+import { QueryObserverResult, RefetchOptions } from '@tanstack/react-query';
 
-interface BiographyProps {}
-const Biography: React.FC<BiographyProps> = () => {
-  const { user, onChangeUser } = useUser();
+interface BiographyProps {
+  user: User;
+  refetchUser: (options?: RefetchOptions) => Promise<QueryObserverResult<User, ErrorResponse>>;
+}
+
+const Biography: React.FC<BiographyProps> = ({ user, refetchUser }) => {
   const [isOpenEditDetails, setIsOpenEditDetails] = useState<boolean>(false);
-  const [bio, setBio] = useState<string>(user?.biography ?? '');
+  const [bio, setBio] = useState<string>(user.biography ?? '');
   const [openBio, setOpenBio] = useState<boolean>(false);
-  const { data: me, refetch } = useMe();
   const { mutate: updateUser, isSuccess, error, isError, isPending } = useUpdateUser(String(user?.id));
   const toastIdRef = useRef<Id>();
 
   useEffect(() => {
     if (isPending) toastIdRef.current = toast.loading('Loading...');
-    if (isSuccess) refetch();
+    if (isSuccess) refetchUser();
     if (isError) toast.error(error.message);
     toast.dismiss(toastIdRef.current);
   }, [isPending, isSuccess, isError]);
-
-  useEffect(() => {
-    if (me) onChangeUser(me.data);
-  }, [me]);
 
   const updateBio = () => {
     updateUser({ biography: bio.trim() });
     setOpenBio(false);
   };
-
-  if (!user) return null;
 
   return (
     <>
@@ -125,7 +121,12 @@ const Biography: React.FC<BiographyProps> = () => {
           </div>
         </div>
       </div>
-      <EditDetailsModal isOpen={isOpenEditDetails} onClose={() => setIsOpenEditDetails(false)} />
+      <EditDetailsModal
+        user={user}
+        refetchUser={refetchUser}
+        isOpen={isOpenEditDetails}
+        onClose={() => setIsOpenEditDetails(false)}
+      />
     </>
   );
 };

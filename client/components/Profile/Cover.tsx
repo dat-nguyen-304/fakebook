@@ -16,8 +16,8 @@ const Cover: React.FC<CoverProps> = ({ user, handleToast, isLoading, onLoading }
   return (
     <div className="relative">
       <Image
-        src={user.cover ?? './background.png'}
-        alt=""
+        src={user.cover}
+        alt="user-cover"
         width={1280}
         height={853}
         className="w-full h-[406px] object-cover rounded-md"

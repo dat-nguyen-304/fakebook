@@ -1,39 +1,34 @@
 import Modal from '@components/common/Modal';
 import Input from '@components/common/Input';
 import { useEffect, useRef, useState } from 'react';
-import { IUpdateUserPayload } from '@types';
+import { ErrorResponse, IUpdateUserPayload, User } from '@types';
 import { useUpdateUser } from '@hooks/api/user';
-import { useUser } from '@hooks/client';
-import { useMe } from '@hooks/api/auth';
 import { Id, toast } from 'react-toastify';
+import { QueryObserverResult, RefetchOptions } from '@tanstack/react-query';
 
 interface EditDetailsModalProps {
+  user: User;
+  refetchUser: (options?: RefetchOptions) => Promise<QueryObserverResult<User, ErrorResponse>>;
   isOpen: boolean;
   onClose: () => void;
 }
-const EditDetailsModal: React.FC<EditDetailsModalProps> = ({ isOpen, onClose }) => {
-  const { user, onChangeUser } = useUser();
-  const [living, setLiving] = useState<string>(user?.living ?? '');
-  const [hometown, setHometown] = useState<string>(user?.hometown ?? '');
-  const [work, setWork] = useState<string>(user?.work ?? '');
-  const [school, setSchool] = useState<string>(user?.school ?? '');
-  const { data: me, refetch } = useMe();
+const EditDetailsModal: React.FC<EditDetailsModalProps> = ({ user, isOpen, onClose, refetchUser }) => {
+  const [living, setLiving] = useState<string>(user.living ?? '');
+  const [hometown, setHometown] = useState<string>(user.hometown ?? '');
+  const [work, setWork] = useState<string>(user.work ?? '');
+  const [school, setSchool] = useState<string>(user.school ?? '');
   const { mutate: updateUser, isSuccess, error, isError, isPending } = useUpdateUser(String(user?.id));
   const toastIdRef = useRef<Id>();
 
   useEffect(() => {
     if (isPending) toastIdRef.current = toast.loading('Loading...');
     if (isSuccess) {
-      refetch();
+      refetchUser();
       onClose();
     }
     if (isError) toast.error(error.message);
     toast.dismiss(toastIdRef.current);
   }, [isPending, isSuccess, isError]);
-
-  useEffect(() => {
-    if (me) onChangeUser(me.data);
-  }, [me]);
 
   const handleSaveChanges = async () => {
     const updatedDetails: IUpdateUserPayload = {

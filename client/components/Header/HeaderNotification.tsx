@@ -7,10 +7,13 @@ import NotificationList from '@components/header/NotificationList';
 import ProfileDropdown from '@components/header/ProfileDropdown';
 import ModalWrapper from '@components/wrapper/ModalWrapper';
 import cn from 'classnames';
+import { User } from '@types';
 
-interface HeaderNotificationProps {}
+interface HeaderNotificationProps {
+  user: User;
+}
 
-const HeaderNotification: React.FC<HeaderNotificationProps> = () => {
+const HeaderNotification: React.FC<HeaderNotificationProps> = ({ user }) => {
   const [isOpenMessage, setIsOpenMessage] = useState<boolean>(false);
   const messageTriggerRef = useRef<HTMLDivElement>(null);
   const [isOpenNotification, setIsOpenNotification] = useState<boolean>(false);
@@ -27,7 +30,7 @@ const HeaderNotification: React.FC<HeaderNotificationProps> = () => {
           setIsOpenProfile(!isOpenProfile);
         }}
       >
-        <Image src="/avatar.jpg" alt="" width={40} height={40} className="rounded-full" />
+        <Image src={user.avatar} alt="" width={40} height={40} className="rounded-full" />
       </div>
       <div
         ref={notificationTriggerRef}
@@ -70,7 +73,7 @@ const HeaderNotification: React.FC<HeaderNotificationProps> = () => {
         <NotificationList />
       </ModalWrapper>
       <ModalWrapper isOpen={isOpenProfile} onClose={() => setIsOpenProfile(false)} triggerRef={profileTriggerRef}>
-        <ProfileDropdown onOpen={setIsOpenProfile} />
+        <ProfileDropdown onOpen={setIsOpenProfile} user={user} />
       </ModalWrapper>
     </div>
   );

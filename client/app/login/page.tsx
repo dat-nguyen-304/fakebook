@@ -4,12 +4,11 @@ import Register from '@components/auth/Register';
 import Login from '@components/auth/Login';
 import { useEffect, useState } from 'react';
 import Loading from '@app/loading';
-import { useUser } from '@hooks/client';
+import { useMe } from '@hooks/api/auth';
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  const { user } = useUser();
+  const { data: user, refetch } = useMe();
 
   useEffect(() => {
     if (!user) setIsLoading(false);
@@ -20,7 +19,7 @@ export default function Auth() {
 
   return (
     <div className="w-[100vw] h-[100vh] flex flex-col justify-center items-center gap-4 bg-[#18191a]">
-      <Login />
+      <Login refetchUser={refetch} />
       {!isLoading && <Register />}
     </div>
   );

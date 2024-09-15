@@ -1,6 +1,7 @@
 import { useLogout } from '@hooks/api/auth';
-import { useTab, useUser } from '@hooks/client';
+import { useTab } from '@hooks/client';
 import { useQueryClient } from '@tanstack/react-query';
+import { User } from '@types';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -9,20 +10,19 @@ import { MdOutlineLogout } from 'react-icons/md';
 import { toast } from 'react-toastify';
 
 interface ProfileDropdownProps {
+  user: User;
   onOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ onOpen }) => {
+const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user, onOpen }) => {
   const router = useRouter();
   const { mutate: logout, isError, isSuccess } = useLogout();
-  const { user, onChangeUser } = useUser();
   const queryClient = useQueryClient();
 
   const { onChangeTab } = useTab();
 
   useEffect(() => {
     if (isSuccess) {
-      onChangeUser(null);
       queryClient.resetQueries({ queryKey: ['me'] });
       router.replace('/login');
     } else if (isError) toast.error('Logout failed');
@@ -31,7 +31,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ onOpen }) => {
   return (
     <div className="fixed top-[57px] rounded-md shadow-md right-[20px] w-[360px] bg-[#242526] text-[#b0b3b8] p-[8px]">
       <Link
-        href={`/${user?.id ?? ''}`}
+        href={`/${user.id}`}
         onClick={() => {
           onOpen(false);
           onChangeTab(null);
@@ -40,9 +40,9 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ onOpen }) => {
         <div className="w-[94%] rounded-lg mx-auto bg-[#252728] hover:bg-[#3a3b3c] shadow-xl">
           <div className="flex items-center gap-2 mt-[10px] p-3 rounded-lg hover:cursor-pointer">
             <div className="w-[36px]">
-              <Image src="/avatar.jpg" alt="" width={36} height={36} className="rounded-full" />
+              <Image src={user.avatar} alt="" width={36} height={36} className="rounded-full" />
             </div>
-            <p className="text-[#e4e6eb]">Nguyễn Văn An</p>
+            <p className="text-[#e4e6eb]">{user.fullName}</p>
           </div>
         </div>
       </Link>

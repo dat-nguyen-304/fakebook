@@ -3,12 +3,16 @@
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { Id, toast } from 'react-toastify';
-import { useLogin, useMe } from '@hooks/api/auth';
+import { useLogin } from '@hooks/api/auth';
 import { useRouter } from 'next/navigation';
+import { QueryObserverResult, RefetchOptions } from '@tanstack/react-query';
+import { ErrorResponse, User } from '@types';
 
-interface LoginProps {}
+interface LoginProps {
+  refetchUser: (options?: RefetchOptions) => Promise<QueryObserverResult<User, ErrorResponse>>;
+}
 
-const Login: React.FC<LoginProps> = () => {
+const Login: React.FC<LoginProps> = ({ refetchUser }) => {
   const [values, setValues] = useState({
     username: '',
     password: ''
@@ -16,13 +20,12 @@ const Login: React.FC<LoginProps> = () => {
 
   const { mutate: login, isSuccess, isError, isPending, error } = useLogin();
   const router = useRouter();
-  const { refetch } = useMe();
   const toastIdRef = useRef<Id>();
 
   useEffect(() => {
     if (isPending) toastIdRef.current = toast.loading('Loading...');
     if (isSuccess) {
-      refetch();
+      refetchUser();
       router.replace('/');
     }
     if (isError) toast.error(error.message);

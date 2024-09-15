@@ -21,7 +21,7 @@ const Avatar: React.FC<AvatarProps> = ({ user, handleToast, isLoading, onLoading
         <div className="relative translate-y-[-50%] flex h-[168px] w-[168px]">
           <Image
             src={user.avatar}
-            alt=""
+            alt="user-avatar"
             width={168}
             height={168}
             className="rounded-full object-cover w-[168px] h-[168px]"
