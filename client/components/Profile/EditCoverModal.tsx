@@ -1,20 +1,27 @@
 import Modal from '@components/common/Modal';
 import Textarea from '@components/common/TextArea';
 import ToggleButton from '@components/common/ToggleButton';
+import { useUpdateUserImage } from '@hooks/api/user';
+import { IUpdateUserImagePayload, User } from '@types';
 import Image from 'next/image';
-import { useCallback, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
 import { useDropzone, FileWithPath, DropzoneRootProps } from 'react-dropzone';
 import { GoUpload } from 'react-icons/go';
 
 interface EditProfileModalProps {
+  user: User;
   isOpen: boolean;
   onClose: () => void;
+  handleToast: (action: 'loading' | 'dismiss' | 'error', message?: string) => void;
+  onLoadingCover: Dispatch<SetStateAction<boolean>>;
 }
 
-const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) => {
+const EditProfileModal: React.FC<EditProfileModalProps> = ({ user, isOpen, onClose, handleToast, onLoadingCover }) => {
   const [isPublic, setIsPublic] = useState<boolean>(true);
   const [description, setDescription] = useState<string>('');
   const [uploadedFiles, setUploadedFiles] = useState<FileWithPath[]>([]);
+  const { mutate: updateUserImage, isPending, isError, error } = useUpdateUserImage(user.id);
+
   const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
     setUploadedFiles(acceptedFiles);
   }, []);
@@ -31,6 +38,29 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
   const handleClose = () => {
     onClose();
     setUploadedFiles([]);
+    setDescription('');
+  };
+
+  useEffect(() => {
+    if (isPending) handleToast('loading');
+    if (isError) {
+      handleToast('error', error.message);
+      handleToast('dismiss');
+      onClose();
+    }
+  }, [isError, isPending]);
+
+  const handleSubmit = async () => {
+    if (!uploadedFiles.length) return;
+    const updateUserImagePayload: IUpdateUserImagePayload = {
+      image: uploadedFiles[0],
+      type: 'cover',
+      isPublic,
+      description: description.trim()
+    };
+    updateUserImage(updateUserImagePayload);
+    onLoadingCover(true);
+    onClose();
   };
 
   const footer = (
@@ -40,7 +70,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose }) 
       </button>
 
       {uploadedFiles.length ? (
-        <button className="w-full mt-4 bg-[#243a52] hover:bg-[#3a4f64] text-[#75b6ff] rounded-lg py-2">
+        <button
+          onClick={handleSubmit}
+          className="w-full mt-4 bg-[#243a52] hover:bg-[#3a4f64] text-[#75b6ff] rounded-lg py-2"
+        >
           Save changes
         </button>
       ) : null}

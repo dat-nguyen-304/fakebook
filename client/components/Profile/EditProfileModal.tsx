@@ -1,44 +1,35 @@
 import Modal from '@components/common/Modal';
 import Input from '@components/common/Input';
 import Select from '@components/common/Select';
-import { useMe } from '@hooks/api/auth';
 import { useUpdateUser } from '@hooks/api/user';
-import { useUser } from '@hooks/client';
-import { useEffect, useRef, useState } from 'react';
-import { Id, toast } from 'react-toastify';
-import { Gender } from '@types';
+import { useEffect, useState } from 'react';
+import { Gender, User } from '@types';
+import { useMe } from '@hooks/api/auth';
 
 interface EditDetailsModalProps {
+  user: User;
   isOpen: boolean;
   onClose: () => void;
+  handleToast: (action: 'loading' | 'dismiss' | 'error', message?: string) => void;
 }
-const EditDetailsModal: React.FC<EditDetailsModalProps> = ({ isOpen, onClose }) => {
-  const { user, onChangeUser } = useUser();
-  const [fullName, setFullName] = useState<string>(user?.fullName ?? '');
-  const [gender, setGender] = useState<Gender>(user?.gender ?? Gender.MALE);
-  const { data: me, refetch } = useMe();
-  const { mutate: updateUser, isSuccess, error, isError, isPending } = useUpdateUser(String(user?.id));
-
-  const toastIdRef = useRef<Id>();
+const EditDetailsModal: React.FC<EditDetailsModalProps> = ({ user, isOpen, onClose, handleToast }) => {
+  const [fullName, setFullName] = useState<string>(user.fullName);
+  const [gender, setGender] = useState<Gender>(user.gender);
+  const { refetch } = useMe();
+  const { mutate: updateUser, isSuccess, error, isError, isPending } = useUpdateUser(user.id);
 
   useEffect(() => {
-    if (isPending) toastIdRef.current = toast.loading('Loading...');
+    if (isPending) handleToast('loading');
     if (isSuccess) refetch();
-    if (isError) toast.error(error.message);
-    toast.dismiss(toastIdRef.current);
+    if (isError) handleToast('error', error.message);
+    handleToast('dismiss');
   }, [isPending, isSuccess, isError]);
 
-  useEffect(() => {
-    if (me) onChangeUser(me.data);
-  }, [me]);
-
   const updateProfile = () => {
-    if (!fullName.trim().length) return toast.error('Full name is required');
+    if (!fullName.trim().length) return handleToast('error', 'Full name is required');
     updateUser({ fullName: fullName.trim(), gender });
     onClose();
   };
-
-  if (!user) return null;
 
   const footer = (
     <button onClick={updateProfile} className="w-full bg-[#243a52] hover:bg-[#3a4f64] text-[#75b6ff] rounded-lg py-2">

@@ -8,6 +8,8 @@ import Cover from './Cover';
 interface ProfileHeaderProps {}
 const ProfileHeader: React.FC<ProfileHeaderProps> = () => {
   const [isLoadingAvatar, setIsLoadingAvatar] = useState<boolean>(false);
+  const [isLoadingCover, setIsLoadingCover] = useState<boolean>(false);
+
   const toastIdRef = useRef<Id>();
   const { data: me, refetch } = useMe();
   const user = me?.data;
@@ -34,9 +36,9 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = () => {
     });
 
     uploadImageSocket.on('imageReady', data => {
-      console.log('Image URL is ready:', data.imageUrl);
       toast.dismiss(toastIdRef.current);
-      setIsLoadingAvatar(false);
+      if (data.type === 'avatar') setIsLoadingAvatar(false);
+      else setIsLoadingCover(false);
       refetch();
     });
 
@@ -54,7 +56,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = () => {
     <div>
       <div className="mt-[56px] bg-gradient-to-b from-[#4c4a47] to-[#242526]">
         <div className="w-full max-w-[1100px] mx-auto">
-          <Cover handleToast={handleToast} user={user} isLoading={isLoadingAvatar} />
+          <Cover handleToast={handleToast} user={user} isLoading={isLoadingCover} onLoading={setIsLoadingCover} />
           <Avatar handleToast={handleToast} user={user} isLoading={isLoadingAvatar} onLoading={setIsLoadingAvatar} />
         </div>
       </div>

@@ -4,26 +4,23 @@ import { useDropzone, FileWithPath, DropzoneRootProps } from 'react-dropzone';
 import Modal from '@components/common/Modal';
 import Textarea from '@components/common/TextArea';
 import ToggleButton from '@components/common/ToggleButton';
-import { useMe } from '@hooks/api/auth';
 import { useUpdateUserImage } from '@hooks/api/user';
-import { useUser } from '@hooks/client';
-import { IUpdateUserImagePayload } from '@types';
+import { IUpdateUserImagePayload, User } from '@types';
 import { GoUpload } from 'react-icons/go';
 
 interface EditAvatarModalProps {
+  user: User;
   isOpen: boolean;
   onClose: () => void;
   handleToast: (action: 'loading' | 'dismiss' | 'error', message?: string) => void;
   onLoadingAvatar: Dispatch<SetStateAction<boolean>>;
 }
 
-const EditAvatarModal: React.FC<EditAvatarModalProps> = ({ isOpen, onClose, handleToast, onLoadingAvatar }) => {
-  const { user, onChangeUser } = useUser();
-  const { data: me } = useMe();
+const EditAvatarModal: React.FC<EditAvatarModalProps> = ({ user, isOpen, onClose, handleToast, onLoadingAvatar }) => {
   const [isPublic, setIsPublic] = useState<boolean>(true);
   const [description, setDescription] = useState<string>('');
   const [uploadedFiles, setUploadedFiles] = useState<FileWithPath[]>([]);
-  const { mutate: updateUserImage, isPending, isError, error } = useUpdateUserImage(String(user?.id));
+  const { mutate: updateUserImage, isPending, isError, error } = useUpdateUserImage(user.id);
 
   const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
     setUploadedFiles(acceptedFiles);
@@ -43,10 +40,6 @@ const EditAvatarModal: React.FC<EditAvatarModalProps> = ({ isOpen, onClose, hand
     setUploadedFiles([]);
     setDescription('');
   };
-
-  useEffect(() => {
-    if (me) onChangeUser(me.data);
-  }, [me]);
 
   useEffect(() => {
     if (isPending) handleToast('loading');
@@ -86,8 +79,6 @@ const EditAvatarModal: React.FC<EditAvatarModalProps> = ({ isOpen, onClose, hand
       ) : null}
     </>
   );
-
-  if (!user) return null;
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} footer={footer} title="Choose profile picture">

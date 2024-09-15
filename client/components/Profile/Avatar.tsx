@@ -69,8 +69,14 @@ const Avatar: React.FC<AvatarProps> = ({ user, handleToast, isLoading, onLoading
           Photos
         </div>
       </div>
-      <EditProfileModal isOpen={isOpenEditProfile} onClose={() => setIsOpenEditProfile(false)} />
+      <EditProfileModal
+        user={user}
+        handleToast={handleToast}
+        isOpen={isOpenEditProfile}
+        onClose={() => setIsOpenEditProfile(false)}
+      />
       <EditAvatarModal
+        user={user}
         isOpen={isOpenEditAvatar}
         onClose={() => setIsOpenEditAvatar(false)}
         handleToast={handleToast}
