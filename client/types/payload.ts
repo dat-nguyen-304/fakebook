@@ -1,3 +1,4 @@
+import { FileWithPath } from 'react-dropzone';
 import { Gender } from './user';
 
 export interface ILoginPayload {
@@ -25,6 +26,11 @@ export interface IUpdateUserPayload {
   hometown?: string;
   work?: string;
   school?: string;
-  avatar?: string;
-  cover?: string;
+}
+
+export interface IUpdateUserImagePayload {
+  image: FileWithPath;
+  type: 'avatar' | 'cover';
+  isPublic: boolean;
+  description?: string;
 }

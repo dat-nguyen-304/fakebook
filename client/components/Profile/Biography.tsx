@@ -15,7 +15,7 @@ interface BiographyProps {}
 const Biography: React.FC<BiographyProps> = () => {
   const { user, onChangeUser } = useUser();
   const [isOpenEditDetails, setIsOpenEditDetails] = useState<boolean>(false);
-  const [bio, setBio] = useState<string>(String(user?.biography));
+  const [bio, setBio] = useState<string>(user?.biography ?? '');
   const [openBio, setOpenBio] = useState<boolean>(false);
   const { data: me, refetch } = useMe();
   const { mutate: updateUser, isSuccess, error, isError, isPending } = useUpdateUser(String(user?.id));

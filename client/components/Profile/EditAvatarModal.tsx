@@ -1,20 +1,30 @@
+import Image from 'next/image';
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
+import { useDropzone, FileWithPath, DropzoneRootProps } from 'react-dropzone';
 import Modal from '@components/common/Modal';
 import Textarea from '@components/common/TextArea';
 import ToggleButton from '@components/common/ToggleButton';
-import Image from 'next/image';
-import { useCallback, useState } from 'react';
-import { useDropzone, FileWithPath, DropzoneRootProps } from 'react-dropzone';
+import { useMe } from '@hooks/api/auth';
+import { useUpdateUserImage } from '@hooks/api/user';
+import { useUser } from '@hooks/client';
+import { IUpdateUserImagePayload } from '@types';
 import { GoUpload } from 'react-icons/go';
 
 interface EditAvatarModalProps {
   isOpen: boolean;
   onClose: () => void;
+  handleToast: (action: 'loading' | 'dismiss' | 'error', message?: string) => void;
+  onLoadingAvatar: Dispatch<SetStateAction<boolean>>;
 }
 
-const EditAvatarModal: React.FC<EditAvatarModalProps> = ({ isOpen, onClose }) => {
+const EditAvatarModal: React.FC<EditAvatarModalProps> = ({ isOpen, onClose, handleToast, onLoadingAvatar }) => {
+  const { user, onChangeUser } = useUser();
+  const { data: me } = useMe();
   const [isPublic, setIsPublic] = useState<boolean>(true);
   const [description, setDescription] = useState<string>('');
   const [uploadedFiles, setUploadedFiles] = useState<FileWithPath[]>([]);
+  const { mutate: updateUserImage, isPending, isError, error } = useUpdateUserImage(String(user?.id));
+
   const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
     setUploadedFiles(acceptedFiles);
   }, []);
@@ -31,6 +41,33 @@ const EditAvatarModal: React.FC<EditAvatarModalProps> = ({ isOpen, onClose }) =>
   const handleClose = () => {
     onClose();
     setUploadedFiles([]);
+    setDescription('');
+  };
+
+  useEffect(() => {
+    if (me) onChangeUser(me.data);
+  }, [me]);
+
+  useEffect(() => {
+    if (isPending) handleToast('loading');
+    if (isError) {
+      handleToast('error', error.message);
+      handleToast('dismiss');
+      onClose();
+    }
+  }, [isError, isPending]);
+
+  const handleSubmit = async () => {
+    if (!uploadedFiles.length) return;
+    const updateUserImagePayload: IUpdateUserImagePayload = {
+      image: uploadedFiles[0],
+      type: 'avatar',
+      isPublic,
+      description: description.trim()
+    };
+    updateUserImage(updateUserImagePayload);
+    onLoadingAvatar(true);
+    onClose();
   };
 
   const footer = (
@@ -40,12 +77,17 @@ const EditAvatarModal: React.FC<EditAvatarModalProps> = ({ isOpen, onClose }) =>
       </button>
 
       {uploadedFiles.length ? (
-        <button className="w-full mt-4 bg-[#243a52] hover:bg-[#3a4f64] text-[#75b6ff] rounded-lg py-2">
+        <button
+          onClick={handleSubmit}
+          className="w-full mt-4 bg-[#243a52] hover:bg-[#3a4f64] text-[#75b6ff] rounded-lg py-2"
+        >
           Save changes
         </button>
       ) : null}
     </>
   );
+
+  if (!user) return null;
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} footer={footer} title="Choose profile picture">
@@ -56,7 +98,7 @@ const EditAvatarModal: React.FC<EditAvatarModalProps> = ({ isOpen, onClose }) =>
             <input {...getInputProps()} name="avatar" />
             <Image
               className="w-full h-full rounded-full object-cover"
-              src={uploadedFiles.length ? URL.createObjectURL(uploadedFiles[0]) : '/avatar.jpg'}
+              src={uploadedFiles.length ? URL.createObjectURL(uploadedFiles[0]) : user.avatar}
               alt=""
               width={240}
               height={240}
@@ -70,7 +112,7 @@ const EditAvatarModal: React.FC<EditAvatarModalProps> = ({ isOpen, onClose }) =>
       </div>
 
       {uploadedFiles.length ? (
-        <div className="my-4 flex items-center my-4 gap-4">
+        <div className="my-4 flex items-center gap-4">
           <h4 className="text-[17px] text-[#dfe2e5] font-bold">Public</h4>
           <ToggleButton enabled={isPublic} onToggle={() => setIsPublic(!isPublic)} />
         </div>
