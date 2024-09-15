@@ -3,6 +3,7 @@ import { AppModule } from '@src/app.module';
 import * as cookieParser from 'cookie-parser';
 import { HttpExceptionFilter } from '@handlers/http-exception.filter';
 import { ResponseInterceptor } from '@handlers/response.interceptor';
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,6 +15,8 @@ async function bootstrap() {
   app.use(cookieParser());
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalFilters(new HttpExceptionFilter());
+  app.use(bodyParser.json({ limit: '10mb' }));
+  app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
   await app.listen(3000);
 }
 bootstrap();
