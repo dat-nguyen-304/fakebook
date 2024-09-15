@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CompressionTypes, Kafka, logLevel, Partitioners, Producer } from 'kafkajs';
+import { CompressionTypes, Kafka, Partitioners, Producer } from 'kafkajs';
 
 @Injectable()
 export class KafkaService {

@@ -1,4 +1,4 @@
-import { CreateUserDto, LoginDto, UpdateUserDto, UpdateUserImageDto, UserResponse } from '@proto/auth';
+import { CreateUserDto, LoginDto, UpdateUserDto, UpdateUserImageDto, UserResponse } from '@proto/user';
 import { Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { ConfigService } from '@nestjs/config';

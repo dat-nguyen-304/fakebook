@@ -2,18 +2,13 @@
 // versions:
 //   protoc-gen-ts_proto  v2.2.0
 //   protoc               v3.20.3
-// source: proto/auth.proto
+// source: proto/user.proto
 
 /* eslint-disable */
 import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
 import { Observable } from "rxjs";
 
 export const protobufPackage = "user";
-
-/**
- * npm i ts-proto
- * npx protoc --plugin=protoc-gen-ts_proto=.\\node_modules\\.bin\\protoc-gen-ts_proto.cmd --ts_proto_out=./ --ts_proto_opt=nestJs=true ./proto/auth.proto
- */
 
 export enum Gender {
   MALE = 0,

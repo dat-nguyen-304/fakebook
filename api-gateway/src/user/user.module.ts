@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { UserService } from '@user/user.service';
 import { UserController } from '@user/user.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { USER_PACKAGE_NAME } from '@proto/auth';
+import { USER_PACKAGE_NAME } from '@proto/user';
 import { join } from 'path';
 import { KafkaService } from './kafka.service';
 
@@ -14,7 +14,7 @@ import { KafkaService } from './kafka.service';
         transport: Transport.GRPC,
         options: {
           package: USER_PACKAGE_NAME,
-          protoPath: join(__dirname, '../../../proto/auth.proto')
+          protoPath: join(__dirname, '../../../proto/user.proto')
         }
       }
     ])

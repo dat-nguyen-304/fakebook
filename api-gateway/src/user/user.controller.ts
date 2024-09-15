@@ -10,7 +10,7 @@ import {
   ValidationPipe
 } from '@nestjs/common';
 import { UserService } from '@user/user.service';
-import { UpdateUserDto } from '@proto/auth';
+import { UpdateUserDto } from '@proto/user';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { UpdateUserImageDto } from './user.dto';

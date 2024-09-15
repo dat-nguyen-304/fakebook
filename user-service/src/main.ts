@@ -8,7 +8,7 @@ async function bootstrap() {
     transport: Transport.GRPC,
     options: {
       package: 'user',
-      protoPath: join(__dirname, '../../proto/auth.proto')
+      protoPath: join(__dirname, '../../proto/user.proto')
     }
   });
   await app.listen();

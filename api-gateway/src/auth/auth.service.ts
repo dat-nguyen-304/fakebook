@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { CreateUserDto, UserServiceClient, USER_SERVICE_NAME, LoginDto } from '@proto/auth';
+import { CreateUserDto, UserServiceClient, USER_SERVICE_NAME, LoginDto } from '@proto/user';
 import { ClientGrpc } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 import { RedisService } from '@auth/redis.service';

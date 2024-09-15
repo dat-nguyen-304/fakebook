@@ -1,5 +1,5 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { UserServiceClient, USER_SERVICE_NAME, UpdateUserImageDto } from '@proto/auth';
+import { UserServiceClient, USER_SERVICE_NAME, UpdateUserImageDto } from '@proto/user';
 import { ClientGrpc, RpcException } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 

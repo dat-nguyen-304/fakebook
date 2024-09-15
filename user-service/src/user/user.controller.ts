@@ -8,7 +8,7 @@ import {
   LoginDto,
   UpdateUserRequest,
   UpdateUserImageRequest
-} from '@proto/auth';
+} from '@proto/user';
 
 @Controller()
 @UserServiceControllerMethods()

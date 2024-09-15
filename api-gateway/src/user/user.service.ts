@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { UserServiceClient, USER_SERVICE_NAME, UpdateUserDto, UpdateUserRequest } from '@proto/auth';
+import { UserServiceClient, USER_SERVICE_NAME, UpdateUserDto, UpdateUserRequest } from '@proto/user';
 import { ClientGrpc } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 import { KafkaService } from './kafka.service';
