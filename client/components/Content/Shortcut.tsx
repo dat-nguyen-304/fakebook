@@ -8,8 +8,8 @@ import { useRouter } from 'next/navigation';
 interface ShortcutProps {}
 const Shortcut: React.FC<ShortcutProps> = () => {
   const { data: user } = useMe();
-  const { onChangeTab } = useTab();
   const router = useRouter();
+  const { onChangeTab } = useTab();
 
   const goToFriends = () => {
     onChangeTab(Tabs.FRIEND);

@@ -25,6 +25,9 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = () => {
 
   useEffect(() => {
     if (!user?.id) return;
+
+    if (!uploadImageSocket.connected) uploadImageSocket.connect();
+
     uploadImageSocket.on('connect', () => {
       const userId = user.id;
       uploadImageSocket.emit('join', userId);
@@ -44,6 +47,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = () => {
     uploadImageSocket.on('disconnect', () => {
       console.log('Disconnected from WebSocket server');
     });
+
     return () => {
       uploadImageSocket.disconnect();
     };

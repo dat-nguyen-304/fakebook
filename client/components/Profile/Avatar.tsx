@@ -14,7 +14,6 @@ interface AvatarProps {
 const Avatar: React.FC<AvatarProps> = ({ user, handleToast, isLoading, onLoading }) => {
   const [isOpenEditProfile, setIsOpenEditProfile] = useState<boolean>(false);
   const [isOpenEditAvatar, setIsOpenEditAvatar] = useState<boolean>(false);
-
   return (
     <div className="px-[32px]">
       <div className="grid grid-cols-5 shadow-border-b h-[108px]">

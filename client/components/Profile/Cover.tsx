@@ -21,6 +21,7 @@ const Cover: React.FC<CoverProps> = ({ user, handleToast, isLoading, onLoading }
         width={1280}
         height={853}
         className="w-full h-[406px] object-cover rounded-md"
+        unoptimized={true}
       />
       {isLoading ? <div className="absolute top-0 left-0 right-0 bottom-0 bg-[rgba(0,0,0,0.4)]" /> : null}
       <button

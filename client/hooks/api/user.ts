@@ -1,6 +1,6 @@
 import axiosClient from '@axios/axios-client';
 import axiosFormData from '@axios/axios-form-data';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { APIResponse, ErrorResponse, User, IUpdateUserPayload, IUpdateUserImagePayload } from '@types';
 
 export const useUpdateUser = (userId: string) => {
@@ -23,6 +23,16 @@ export const useUpdateUserImage = (userId: string) => {
       if (isPublic && description) formData.append('description', description);
       const response: APIResponse<User> = await axiosFormData.post(`/user/image/${userId}`, payload);
       return response;
+    }
+  });
+};
+
+export const useAllUsers = () => {
+  return useQuery<User[], ErrorResponse>({
+    queryKey: ['all-user'],
+    queryFn: async () => {
+      const response: APIResponse<User[]> = await axiosClient.get('/user');
+      return response.data;
     }
   });
 };
