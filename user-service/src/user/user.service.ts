@@ -41,7 +41,7 @@ export class UserService {
     const session = this.driver.session();
     try {
       const foundUser = await this.findByUsername(createUserDto.username);
-      if (!foundUser.success)
+      if (foundUser.success)
         return {
           success: false,
           message: 'Username already exists',
@@ -98,8 +98,18 @@ export class UserService {
     }
   }
 
-  findAll() {
-    return formattedResponse('success', 'Coming soon...', null);
+  async findAll() {
+    const session = this.driver.session();
+    try {
+      const result = await session.run('MATCH (user:USER) RETURN user;');
+      const users = result.records.map(record => record.get('user').properties);
+      return formattedResponse('success', undefined, users);
+    } catch (error) {
+      console.log({ error });
+      return formattedResponse('fail');
+    } finally {
+      session.close();
+    }
   }
 
   async findOne(id: string) {
@@ -154,7 +164,7 @@ export class UserService {
       );
       const records = result.records;
       if (records.length === 0) return formattedResponse('fail');
-      this.wsClient.emit('imageReady', { userId, imageUrl: url });
+      this.wsClient.emit('imageReady', { userId, imageUrl: url, type });
       return formattedResponse('success', undefined, records[0].get('u').properties);
     } catch (error) {
       console.error({ error });
