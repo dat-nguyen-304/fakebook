@@ -7,8 +7,8 @@ export class WsController {
   constructor(private readonly wsGateway: WsGateway) {}
 
   @EventPattern('imageReady')
-  handleImageReady(@Payload() data: { userId: string; imageUrl: string }) {
+  handleImageReady(@Payload() data: { userId: string; imageUrl: string; type: string }) {
     console.log('Received imageReady event:', data);
-    this.wsGateway.notifyImageReady(data.userId, data.imageUrl);
+    this.wsGateway.notifyImageReady(data.userId, data.imageUrl, data.type);
   }
 }

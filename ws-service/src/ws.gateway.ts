@@ -17,7 +17,7 @@ export class WsGateway {
     client.join(userId);
   }
 
-  notifyImageReady(userId: string, imageUrl: string) {
-    this.server.to(userId).emit('imageReady', { imageUrl });
+  notifyImageReady(userId: string, imageUrl: string, type: string) {
+    this.server.to(userId).emit('imageReady', { imageUrl, type });
   }
 }
