@@ -7,7 +7,10 @@ import {
   FindOneUserDto,
   LoginDto,
   UpdateUserRequest,
-  UpdateUserImageRequest
+  UpdateUserImageRequest,
+  SendFriendRequestDto,
+  GetFriendSuggestionsDto,
+  AcceptFriendRequestDto
 } from '@proto/user';
 
 @Controller()
@@ -30,11 +33,23 @@ export class UserController implements UserServiceController {
     return this.userService.findOne(findOneUserDto.id);
   }
 
-  updateUser(updateUserRequest: UpdateUserRequest) {
-    return this.userService.update(updateUserRequest.userId, updateUserRequest.updateUserDto);
+  updateUser({ userId, updateUserDto }: UpdateUserRequest) {
+    return this.userService.update(userId, updateUserDto);
   }
 
-  updateUserImage(updateUserImageRequest: UpdateUserImageRequest) {
-    return this.userService.updateImage(updateUserImageRequest.userId, updateUserImageRequest.updateUserImageDto);
+  updateUserImage({ userId, updateUserImageDto }: UpdateUserImageRequest) {
+    return this.userService.updateImage(userId, updateUserImageDto);
+  }
+
+  getFriendSuggestions({ userId }: GetFriendSuggestionsDto) {
+    return this.userService.getFriendSuggestions(userId);
+  }
+
+  sendFriendRequest({ senderId, receiverId }: SendFriendRequestDto) {
+    return this.userService.sendFriendRequest(senderId, receiverId);
+  }
+
+  acceptFriendRequest({ senderId, receiverId }: AcceptFriendRequestDto) {
+    return this.userService.acceptFriendRequest(senderId, receiverId);
   }
 }

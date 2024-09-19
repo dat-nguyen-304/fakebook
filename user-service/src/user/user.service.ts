@@ -173,4 +173,84 @@ export class UserService {
       await session.close();
     }
   }
+
+  async getFriendSuggestions(userId: string) {
+    const session = this.driver.session();
+    try {
+      const result = await session.run(
+        `
+          MATCH (user:USER)
+          WHERE user.id <> $userId
+          AND NOT (user)-[:SENT_FRIEND_REQUEST]->(:USER {id: $userId})
+          AND NOT (:USER {id: $userId})-[:SENT_FRIEND_REQUEST]->(user)
+          AND NOT (user)-[:FRIEND]->(:USER {id: $userId})
+          AND NOT (:USER {id: $userId})-[:FRIEND]->(user)
+          RETURN user
+        `,
+        { userId }
+      );
+
+      const users = result.records.map(record => record.get('user').properties);
+      return formattedResponse('success', undefined, users);
+    } catch (error) {
+      console.error({ error });
+      return formattedResponse('fail');
+    } finally {
+      await session.close();
+    }
+  }
+
+  async sendFriendRequest(senderId: string, receiverId: string) {
+    const session = this.driver.session();
+
+    try {
+      const result = await session.run(
+        `
+          MATCH (sender:USER {id: $senderId}), (receiver:USER {id: $receiverId})
+          OPTIONAL MATCH (sender)-[r:SENT_FRIEND_REQUEST]->(receiver)
+          OPTIONAL MATCH (receiver)-[r2:SENT_FRIEND_REQUEST]->(sender)
+          WITH sender, receiver, r, r2
+          WHERE r IS NULL AND r2 IS NULL
+          CREATE (sender)-[:SENT_FRIEND_REQUEST {sentTime: timestamp(), acceptedTime: null}]->(receiver)
+          RETURN sender, receiver
+        `,
+        { senderId, receiverId }
+      );
+
+      const records = result.records;
+      if (records.length === 0) return formattedResponse('fail', 'Friend request already exists');
+      return formattedResponse('success');
+    } catch (error) {
+      console.error({ error });
+      return formattedResponse('fail');
+    } finally {
+      await session.close();
+    }
+  }
+
+  async acceptFriendRequest(senderId: string, receiverId: string) {
+    const session = this.driver.session();
+    try {
+      const result = await session.run(
+        `
+          MATCH (sender:USER {id: $senderId})-[r:SENT_FRIEND_REQUEST]->(receiver:USER {id: $receiverId})
+          WHERE r.acceptedTime IS NULL
+          SET r.acceptedTime = timestamp()
+          CREATE (sender)-[:FRIEND]->(receiver)
+          CREATE (receiver)-[:FRIEND]->(sender)
+          RETURN sender, receiver
+        `,
+        { senderId, receiverId }
+      );
+
+      const records = result.records;
+      if (records.length === 0) return formattedResponse('fail', 'Friend request not found or already accepted');
+      return formattedResponse('success');
+    } catch (error) {
+      console.error({ error });
+      return formattedResponse('fail');
+    } finally {
+      await session.close();
+    }
+  }
 }
