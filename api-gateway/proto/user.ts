@@ -39,10 +39,6 @@ export interface User {
 export interface Empty {
 }
 
-export interface Users {
-  users: User[];
-}
-
 export interface UserResponse {
   success: boolean;
   message: string;
@@ -52,7 +48,7 @@ export interface UserResponse {
 export interface UsersResponse {
   success: boolean;
   message: string;
-  data: Users | undefined;
+  data: User[];
 }
 
 export interface PaginationDto {

@@ -37,10 +37,6 @@ enum Gender {
 }
 
 message Empty {};
-  
-message Users {
-    repeated User users = 1;
-}
 
 message UserResponse {
     bool success = 1;
@@ -51,7 +47,7 @@ message UserResponse {
 message UsersResponse {
     bool success = 1;
     string message = 2;
-    Users data = 3;
+    repeated User data = 3;
 }
 
 message PaginationDto {
