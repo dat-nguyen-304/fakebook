@@ -3,6 +3,7 @@ import { Kafka, Producer, Consumer, Partitioners } from 'kafkajs';
 import { CloudinaryService } from '@cloudinary/cloudinary.service';
 import { KafkaAdminService } from '@kafka/kafka-admin.service';
 import { ImageService } from '@image/image.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class KafkaService implements OnModuleInit, OnModuleDestroy {
@@ -14,11 +15,12 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
   constructor(
     private cloudinaryService: CloudinaryService,
     private readonly kafkaAdminService: KafkaAdminService,
-    private readonly imageService: ImageService
+    private readonly imageService: ImageService,
+    private config: ConfigService
   ) {
     this.kafka = new Kafka({
       clientId: 'image-service',
-      brokers: ['localhost:9092', 'localhost:9093']
+      brokers: [this.config.get('KAFKA_BROKER_1'), this.config.get('KAFKA_BROKER_2')]
     });
     this.producer = this.kafka.producer({ createPartitioner: Partitioners.LegacyPartitioner });
     this.consumer = this.kafka.consumer({ groupId: 'image-upload-group' });
@@ -42,7 +44,8 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
           const imageBuffer = Buffer.from(file, 'base64');
           const result = await this.cloudinaryService.uploadImage(imageBuffer);
           this.logger.log(`Received url ${result.secure_url}`);
-          this.imageService.updateUserImage(userId, { type, url: result.secure_url });
+          const url = result.secure_url.slice(this.config.get('CLOUDINARY_HOST').length);
+          this.imageService.updateUserImage(userId, { type, url });
         } catch (error) {
           console.error('Error processing message:', error);
         }
