@@ -1,6 +1,6 @@
 'use client';
 
-import { useMe } from '@hooks/api/auth';
+import { useMe } from '@hooks/api/user';
 import { useFriendSuggestions, useSendFriendRequest } from '@hooks/api/user';
 import { Tabs, useTab } from '@hooks/client';
 import Image from 'next/image';

@@ -46,13 +46,3 @@ export const useLogout = () => {
     }
   });
 };
-
-export const useMe = () => {
-  return useQuery<User, ErrorResponse>({
-    queryKey: ['me'],
-    queryFn: async () => {
-      const response: APIResponse<User> = await axiosClient.get('/auth/me');
-      return response.data;
-    }
-  });
-};

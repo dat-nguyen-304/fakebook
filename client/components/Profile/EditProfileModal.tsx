@@ -4,7 +4,7 @@ import Select from '@components/common/Select';
 import { useUpdateUser } from '@hooks/api/user';
 import { useEffect, useState } from 'react';
 import { Gender, User } from '@types';
-import { useMe } from '@hooks/api/auth';
+import { useMe } from '@hooks/api/user';
 
 interface EditDetailsModalProps {
   user: User;

@@ -3,6 +3,16 @@ import axiosFormData from '@axios/axios-form-data';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { APIResponse, ErrorResponse, User, IUpdateUserPayload, IUpdateUserImagePayload } from '@types';
 
+export const useMe = () => {
+  return useQuery<User, ErrorResponse>({
+    queryKey: ['me'],
+    queryFn: async () => {
+      const response: APIResponse<User> = await axiosClient.get('/user/me');
+      return response.data;
+    }
+  });
+};
+
 export const useUpdateUser = (userId: string) => {
   return useMutation<APIResponse<User>, ErrorResponse, IUpdateUserPayload>({
     mutationFn: async payload => {

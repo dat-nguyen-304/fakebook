@@ -4,7 +4,7 @@ import Register from '@components/auth/Register';
 import Login from '@components/auth/Login';
 import { useEffect, useState } from 'react';
 import Loading from '@app/loading';
-import { useMe } from '@hooks/api/auth';
+import { useMe } from '@hooks/api/user';
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState<boolean>(true);

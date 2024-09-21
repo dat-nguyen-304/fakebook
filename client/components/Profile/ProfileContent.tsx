@@ -2,7 +2,7 @@
 
 import Posts from '@components/profile/Posts';
 import Biography from './Biography';
-import { useMe } from '@hooks/api/auth';
+import { useMe } from '@hooks/api/user';
 
 interface ProfileContentProps {}
 const ProfileContent: React.FC<ProfileContentProps> = () => {

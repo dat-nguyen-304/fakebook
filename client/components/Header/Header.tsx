@@ -5,7 +5,7 @@ import HeaderTabs from './HeaderTabs';
 import HeaderSearch from './HeaderSearch';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useMe } from '@hooks/api/auth';
+import { useMe } from '@hooks/api/user';
 import { useOpenModal } from '@hooks/client/useOpenModal';
 import cn from 'classnames';
 

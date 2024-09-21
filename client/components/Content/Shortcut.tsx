@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useMe } from '@hooks/api/auth';
+import { useMe } from '@hooks/api/user';
 import { Tabs, useTab } from '@hooks/client';
 import { useRouter } from 'next/navigation';
 

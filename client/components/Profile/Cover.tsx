@@ -16,7 +16,7 @@ const Cover: React.FC<CoverProps> = ({ user, handleToast, isLoading, onLoading }
   return (
     <div className="relative">
       <Image
-        src={user.cover}
+        src={`${process.env.NEXT_PUBLIC_IMAGE_HOST}/${user.cover}`}
         alt="user-cover"
         width={1280}
         height={853}

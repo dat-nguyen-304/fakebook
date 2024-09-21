@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useMe } from '@hooks/api/auth';
+import { useMe } from '@hooks/api/user';
 import { uploadImageSocket } from '@socket/socket';
 import { Id, toast } from 'react-toastify';
 import Avatar from './Avatar';

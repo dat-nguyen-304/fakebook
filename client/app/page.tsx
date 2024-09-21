@@ -3,7 +3,7 @@
 import Contacts from '@components/content/Contacts';
 import NewsFeed from '@components/content/NewsFeed';
 import Shortcut from '@components/content/Shortcut';
-import { useMe } from '@hooks/api/auth';
+import { useMe } from '@hooks/api/user';
 
 interface AppProps {}
 
