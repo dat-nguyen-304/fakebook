@@ -1,9 +1,8 @@
-import { Body, Controller, Get, Post, Req, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Post, Req, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthService } from '@auth/auth.service';
-import { CreateUserDto, LoginDto, User } from '@proto/user';
+import { CreateUserDto, LoginDto } from '@proto/user';
 import { AttachTokensInterceptor, RemoveTokensInterceptor } from '@handlers/token.interceptor';
 import { JwtGuard } from './guard';
-import { GetUser } from '@src/decorators';
 import { Request } from 'express';
 
 @Controller('auth')
@@ -26,12 +25,6 @@ export class AuthController {
   @UseInterceptors(AttachTokensInterceptor)
   refresh(@Req() req: Request) {
     return this.authService.refresh(req.cookies.refreshToken);
-  }
-
-  @Get('me')
-  @UseGuards(JwtGuard)
-  getMe(@GetUser() user: User) {
-    return user;
   }
 
   @UseGuards(JwtGuard)

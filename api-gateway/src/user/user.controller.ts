@@ -17,6 +17,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { AddFriendRequestDto, UpdateUserImageDto } from './user.dto';
 import { JwtGuard } from '@src/auth/guard';
+import { GetUser } from '@src/decorators';
+import { TokenPayload } from '@auth/token.service';
 
 @Controller('user')
 @UseGuards(JwtGuard)
@@ -27,6 +29,11 @@ export class UserController {
   @Get('')
   getAll() {
     return this.userService.getAll();
+  }
+
+  @Get('me')
+  getMe(@GetUser() user: TokenPayload) {
+    return this.userService.getUser(user.id);
   }
 
   @Patch(':id')

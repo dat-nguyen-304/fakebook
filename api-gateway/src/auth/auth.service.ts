@@ -29,14 +29,14 @@ export class AuthService implements OnModuleInit {
     const response = await lastValueFrom(this.userService.login(loginDto));
     const user = response.data;
     if (!user) throw new BadRequestException(response.message);
-    const tokens = await this.token.signToken(user.id, user.username, user.fullName);
+    const tokens = await this.token.signToken({ id: user.id, fullName: user.fullName });
     this.redis.storeToken(tokens);
     return tokens;
   }
 
   async refresh(refreshToken: string) {
     if (!refreshToken) throw new BadRequestException('Not found refresh token');
-    const { id, username, fullName } = await this.token.verifyRefreshToken(refreshToken);
+    const { id, fullName } = await this.token.verifyRefreshToken(refreshToken);
     const isValidRefreshToken = await this.redis.isValidToken(refreshToken, 'refresh');
 
     if (!isValidRefreshToken) {
@@ -46,7 +46,7 @@ export class AuthService implements OnModuleInit {
 
     await this.redis.deleteToken(refreshToken, 'refresh');
 
-    const tokens = await this.token.signToken(id, username, fullName);
+    const tokens = await this.token.signToken({ id, fullName });
     this.redis.storeToken(tokens);
     return tokens;
   }
