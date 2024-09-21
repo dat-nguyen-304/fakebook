@@ -36,3 +36,22 @@ export const useAllUsers = () => {
     }
   });
 };
+
+export const useFriendSuggestions = (userId: string) => {
+  return useQuery<User[], ErrorResponse>({
+    queryKey: ['all-user'],
+    queryFn: async () => {
+      const response: APIResponse<User[]> = await axiosClient.get(`/user/friend-suggestions/${userId}`);
+      return response.data;
+    }
+  });
+};
+
+export const useSendFriendRequest = (userId: string) => {
+  return useMutation<APIResponse<User>, ErrorResponse, { friendId: string }>({
+    mutationFn: async payload => {
+      const response: APIResponse<User> = await axiosClient.post(`/user/send-friend-request/${userId}`, payload);
+      return response;
+    }
+  });
+};

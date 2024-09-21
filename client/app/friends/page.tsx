@@ -1,18 +1,36 @@
 'use client';
 
 import { useMe } from '@hooks/api/auth';
-import { useAllUsers } from '@hooks/api/user';
+import { useFriendSuggestions, useSendFriendRequest } from '@hooks/api/user';
 import { Tabs, useTab } from '@hooks/client';
 import Image from 'next/image';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 export default function FriendSuggestion() {
   const { data: user } = useMe();
-  const { data: users } = useAllUsers();
+  const { data: users } = useFriendSuggestions(String(user?.id));
+  const { mutate: sendFriendRequest, isSuccess, isError, error } = useSendFriendRequest(String(user?.id));
+  const [friendRequests, setFriendRequests] = useState<{ [key: string]: boolean }>({});
+  const [currentFriend, setCurrentFiend] = useState<string>();
+
+  useEffect(() => {
+    if (isError) toast.error(error.message);
+    if (isSuccess && currentFriend) {
+      setFriendRequests(prev => ({ ...prev, [currentFriend]: true }));
+    }
+  }, [isError, isSuccess]);
+
   const { onChangeTab } = useTab();
   useEffect(() => {
     onChangeTab(Tabs.FRIEND);
   }, []);
+
+  const addFriend = (friendId: string) => {
+    setCurrentFiend(friendId);
+    sendFriendRequest({ friendId });
+  };
+
   return (
     <div className="mt-[56px] grid grid-cols-4 p-[6px] min-h-[calc(100vh-56px)] bg-[#18191a]">
       {user && users && (
@@ -44,10 +62,16 @@ export default function FriendSuggestion() {
                   <div className="bg-[#242526] text-[#e4e6eb] font-semibold py-[8px] px-[12px] ">
                     <h4 className="text-[17px] font-bold">{suggestion.fullName}</h4>
                     <h4 className="text-[15px] font-extralight">1 mutual friend</h4>
-                    <button className="w-full mb-1 mt-6 bg-[#233950] text-[#235bd2] py-2 rounded-md hover:brightness-125">
-                      Add friend
+                    <button
+                      onClick={() => addFriend(suggestion.id)}
+                      disabled={friendRequests[suggestion.id]}
+                      className="w-full mb-1 mt-6 bg-[#233950] text-[#235bd2] py-2 rounded-md hover:brightness-125"
+                    >
+                      {friendRequests[suggestion.id] ? 'Request sent' : 'Add friend'}
                     </button>
-                    <button className="w-full my-1 bg-[#3a3b3c] py-2 rounded-md hover:brightness-125">Remove</button>
+                    <button className="w-full my-1 bg-[#3a3b3c] py-2 rounded-md hover:brightness-125">
+                      {friendRequests[suggestion.id] ? 'Cancel' : 'Remove'}
+                    </button>
                   </div>
                 </div>
               ))}

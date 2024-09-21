@@ -56,12 +56,10 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = () => {
   if (!user) return null;
 
   return (
-    <div>
-      <div className="mt-[56px] bg-gradient-to-b from-[#4c4a47] to-[#242526]">
-        <div className="w-full max-w-[1100px] mx-auto">
-          <Cover handleToast={handleToast} user={user} isLoading={isLoadingCover} onLoading={setIsLoadingCover} />
-          <Avatar handleToast={handleToast} user={user} isLoading={isLoadingAvatar} onLoading={setIsLoadingAvatar} />
-        </div>
+    <div className="mt-[56px] bg-gradient-to-b from-[#4c4a47] to-[#242526]">
+      <div className="w-full max-w-[1100px] mx-auto">
+        <Cover handleToast={handleToast} user={user} isLoading={isLoadingCover} onLoading={setIsLoadingCover} />
+        <Avatar handleToast={handleToast} user={user} isLoading={isLoadingAvatar} onLoading={setIsLoadingAvatar} />
       </div>
     </div>
   );

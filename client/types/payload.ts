@@ -34,3 +34,7 @@ export interface IUpdateUserImagePayload {
   isPublic: boolean;
   description?: string;
 }
+
+export interface IAddFriendRequestPayload {
+  friendId: number;
+}
