@@ -9,6 +9,9 @@ service UserService {
     rpc FindOneUser (FindOneUserDto) returns (UserResponse) {}
     rpc UpdateUser (UpdateUserRequest) returns (UserResponse) {}
     rpc UpdateUserImage (UpdateUserImageRequest) returns (UserResponse) {}
+    rpc GetFriendSuggestions (GetFriendSuggestionsDto) returns (UsersResponse) {}
+    rpc SendFriendRequest (SendFriendRequestDto) returns (StatusResponse) {}
+    rpc AcceptFriendRequest (AcceptFriendRequestDto) returns (StatusResponse) {}
 }
 
 message User {
@@ -48,6 +51,11 @@ message UsersResponse {
     bool success = 1;
     string message = 2;
     repeated User data = 3;
+}
+
+message StatusResponse {
+    bool success = 1;
+    string message = 2;
 }
 
 message PaginationDto {
@@ -95,4 +103,18 @@ message CreateUserDto {
 message LoginDto {
     string username = 1;
     string password = 2;
+}
+
+message GetFriendSuggestionsDto {
+    string userId = 1;
+}
+
+message SendFriendRequestDto {
+    string senderId = 1;
+    string receiverId = 2;
+}
+
+message AcceptFriendRequestDto {
+    string senderId = 1;
+    string receiverId = 2;
 }

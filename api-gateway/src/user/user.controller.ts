@@ -15,7 +15,7 @@ import { UserService } from '@user/user.service';
 import { UpdateUserDto } from '@proto/user';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-import { UpdateUserImageDto } from './user.dto';
+import { AddFriendRequestDto, UpdateUserImageDto } from './user.dto';
 import { JwtGuard } from '@src/auth/guard';
 
 @Controller('user')
@@ -42,5 +42,15 @@ export class UserController {
     @Body() updateUserImage: UpdateUserImageDto //used for post newfeeds
   ) {
     return this.userService.updateImage(userId, image, updateUserImage.type);
+  }
+
+  @Get('/friend-suggestions/:id')
+  async getFriendSuggestions(@Param('id') userId: string) {
+    return this.userService.getFriendSuggestions(userId);
+  }
+
+  @Post('/send-friend-request/:id')
+  async sendFriendRequest(@Param('id') userId: string, @Body() body: AddFriendRequestDto) {
+    return this.userService.sendFriendRequest(userId, body.friendId);
   }
 }

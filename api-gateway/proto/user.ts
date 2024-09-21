@@ -51,6 +51,11 @@ export interface UsersResponse {
   data: User[];
 }
 
+export interface StatusResponse {
+  success: boolean;
+  message: string;
+}
+
 export interface PaginationDto {
   page: number;
   skip: number;
@@ -98,6 +103,20 @@ export interface LoginDto {
   password: string;
 }
 
+export interface GetFriendSuggestionsDto {
+  userId: string;
+}
+
+export interface SendFriendRequestDto {
+  senderId: string;
+  receiverId: string;
+}
+
+export interface AcceptFriendRequestDto {
+  senderId: string;
+  receiverId: string;
+}
+
 export const USER_PACKAGE_NAME = "user";
 
 export interface UserServiceClient {
@@ -112,6 +131,12 @@ export interface UserServiceClient {
   updateUser(request: UpdateUserRequest): Observable<UserResponse>;
 
   updateUserImage(request: UpdateUserImageRequest): Observable<UserResponse>;
+
+  getFriendSuggestions(request: GetFriendSuggestionsDto): Observable<UsersResponse>;
+
+  sendFriendRequest(request: SendFriendRequestDto): Observable<StatusResponse>;
+
+  acceptFriendRequest(request: AcceptFriendRequestDto): Observable<StatusResponse>;
 }
 
 export interface UserServiceController {
@@ -126,6 +151,18 @@ export interface UserServiceController {
   updateUser(request: UpdateUserRequest): Promise<UserResponse> | Observable<UserResponse> | UserResponse;
 
   updateUserImage(request: UpdateUserImageRequest): Promise<UserResponse> | Observable<UserResponse> | UserResponse;
+
+  getFriendSuggestions(
+    request: GetFriendSuggestionsDto,
+  ): Promise<UsersResponse> | Observable<UsersResponse> | UsersResponse;
+
+  sendFriendRequest(
+    request: SendFriendRequestDto,
+  ): Promise<StatusResponse> | Observable<StatusResponse> | StatusResponse;
+
+  acceptFriendRequest(
+    request: AcceptFriendRequestDto,
+  ): Promise<StatusResponse> | Observable<StatusResponse> | StatusResponse;
 }
 
 export function UserServiceControllerMethods() {
@@ -137,6 +174,9 @@ export function UserServiceControllerMethods() {
       "findOneUser",
       "updateUser",
       "updateUserImage",
+      "getFriendSuggestions",
+      "sendFriendRequest",
+      "acceptFriendRequest",
     ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);

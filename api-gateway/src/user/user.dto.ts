@@ -16,3 +16,8 @@ export class UpdateUserImageDto {
   @IsBooleanString()
   isPublic: string;
 }
+
+export class AddFriendRequestDto {
+  @IsString()
+  friendId: string;
+}

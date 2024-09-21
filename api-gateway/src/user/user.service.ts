@@ -34,4 +34,16 @@ export class UserService implements OnModuleInit {
     this.kafkaService.sendImageUploadMessage({ file: image.buffer.toString('base64'), userId, type });
     return `Uploading ${type} ...`;
   }
+
+  async getFriendSuggestions(userId: string) {
+    const response = await lastValueFrom(this.grpcService.getFriendSuggestions({ userId }));
+    if (!response.success) throw new BadRequestException(response.message);
+    return response.data;
+  }
+
+  async sendFriendRequest(senderId: string, receiverId: string) {
+    const response = await lastValueFrom(this.grpcService.sendFriendRequest({ senderId, receiverId }));
+    if (!response.success) throw new BadRequestException(response.message);
+    return response.message;
+  }
 }
