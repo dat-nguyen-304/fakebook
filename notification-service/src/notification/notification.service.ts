@@ -6,6 +6,7 @@ import { UserService } from '@user/user.service';
 import { ICreateNotification, IGetNotifications } from './notification.interface';
 import formattedResponse from './response.format';
 import { ClientProxy } from '@nestjs/microservices';
+import { NotificationEvent } from './notification.event';
 
 @Injectable()
 export class NotificationService {
@@ -18,9 +19,9 @@ export class NotificationService {
   getContent(type: string) {
     switch (type) {
       case 'FRIEND_REQUEST':
-        return 'You have a new friend request';
+        return 'has sent you friend request.';
       case 'FRIEND_ACCEPT':
-        return 'Your friend request has been accepted';
+        return 'has accepted your friend request.';
       default:
         return '';
     }
@@ -30,18 +31,25 @@ export class NotificationService {
     const { sender, receiver, type } = payload;
     const content = this.getContent(type);
     const user = await this.userService.findByIds([sender]);
-    const senderAvatar = user[0]?.avatar || '';
+    if (!user) {
+      return formattedResponse('fail', 'User not found', undefined);
+    }
+    const senderAvatar = user[0].avatar;
+    const senderName = user[0].fullName;
 
     const newNotification = new this.notificationModel({
       sender,
       receiver,
       type,
-      content,
-      senderAvatar
+      content
     });
 
     await newNotification.save();
-    this.wsClient.emit('create-notification', newNotification);
+
+    this.wsClient.emit(
+      'create-notification',
+      new NotificationEvent(sender, receiver, senderName, senderAvatar, type, content, new Date())
+    );
     return formattedResponse('success', undefined, newNotification);
   }
 
