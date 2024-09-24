@@ -18,6 +18,9 @@ export class Notification extends Document {
   @Prop({ default: false })
   seen: boolean;
 
+  @Prop({ required: true })
+  senderAvatar: string;
+
   @Prop({ default: Date.now })
   createdAt: Date;
 }

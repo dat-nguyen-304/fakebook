@@ -7,6 +7,9 @@ export class User extends Document {
   userId: string;
 
   @Prop({ required: true })
+  fullName: string;
+
+  @Prop({ required: true })
   avatar: string;
 }
 

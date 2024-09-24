@@ -10,6 +10,10 @@
 /image-service/node_modules
 /image-service/.env
 
+/notification-service/dist
+/notification-service/node_modules
+/notification-service/.env
+
 /ws-service/dist
 /ws-service/node_modules
 /ws-service/.env
