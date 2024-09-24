@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { useMe } from '@hooks/api/user';
-import { uploadImageSocket } from '@socket/socket';
 import { Id, toast } from 'react-toastify';
 import Avatar from './Avatar';
 import Cover from './Cover';
+import { notificationSocket } from '@socket/socket';
 
 interface ProfileHeaderProps {}
 const ProfileHeader: React.FC<ProfileHeaderProps> = () => {
@@ -26,30 +26,15 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = () => {
   useEffect(() => {
     if (!user?.id) return;
 
-    if (!uploadImageSocket.connected) uploadImageSocket.connect();
-
-    uploadImageSocket.on('connect', () => {
-      const userId = user.id;
-      uploadImageSocket.emit('join', userId);
-    });
-
-    uploadImageSocket.on('connect_error', err => {
-      console.error('Connection error:', err);
-    });
-
-    uploadImageSocket.on('imageReady', data => {
+    notificationSocket.on('image-ready', data => {
       toast.dismiss(toastIdRef.current);
       if (data.type === 'avatar') setIsLoadingAvatar(false);
       else setIsLoadingCover(false);
       refetch();
     });
 
-    uploadImageSocket.on('disconnect', () => {
-      console.log('Disconnected from WebSocket server');
-    });
-
     return () => {
-      uploadImageSocket.disconnect();
+      notificationSocket.off('image-ready');
     };
   }, [user?.id]);
 

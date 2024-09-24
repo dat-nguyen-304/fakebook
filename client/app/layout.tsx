@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Header from '@components/header/Header';
 import ChatBox from '@components/chat/ChatBox';
 import ReactQueryProvider from '@components/providers/ReactQueryProvider';
+import { WebSocketProvider } from '@components/providers/WebSocketProvider';
 
 const inter = Mulish({ subsets: ['latin'] });
 
@@ -19,10 +20,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={inter.className}>
         <ReactQueryProvider>
-          <Header />
-          {children}
-          <ChatBox />
-          <ToastContainer position="bottom-right" />
+          <WebSocketProvider>
+            <Header />
+            {children}
+            <ChatBox />
+            <ToastContainer position="bottom-right" />
+          </WebSocketProvider>
         </ReactQueryProvider>
       </body>
     </html>

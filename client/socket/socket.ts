@@ -2,4 +2,4 @@
 
 import { io } from 'socket.io-client';
 
-export const uploadImageSocket = io('http://localhost:3001/upload-image');
+export const notificationSocket = io('http://localhost:4000/notification');
