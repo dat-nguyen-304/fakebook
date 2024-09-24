@@ -5,7 +5,8 @@ import { ConfigService } from '@nestjs/config';
 import neo4j, { Driver } from 'neo4j-driver';
 import * as argon from 'argon2';
 import formattedResponse from './response.format';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientKafka, ClientProxy } from '@nestjs/microservices';
+import { CreateUserEvent, FriendAcceptEvent, FriendRequestEvent, UpdateUserEvent } from './notification.event';
 
 @Injectable()
 export class UserService {
@@ -13,7 +14,8 @@ export class UserService {
 
   constructor(
     private readonly configService: ConfigService,
-    @Inject('WS_SERVICE') private readonly wsClient: ClientProxy
+    @Inject('WS_SERVICE') private readonly wsClient: ClientProxy,
+    @Inject('NOTIFICATION_SERVICE') private readonly notificationClient: ClientKafka
   ) {
     this.driver = neo4j.driver(
       this.configService.get('NEO4J_HOST'),
@@ -70,6 +72,7 @@ export class UserService {
 
       const newUser = records[0].get(0).properties;
       delete newUser.password;
+      this.notificationClient.emit('create-user', new CreateUserEvent(newUser.id, newUser.fullName, newUser.avatar));
       return formattedResponse('success', undefined, newUser);
     } catch (error) {
       console.log({ error });
@@ -140,6 +143,8 @@ export class UserService {
 
       const records = result.records;
       if (records.length === 0) return formattedResponse('fail');
+      if (updateUserDto.fullName)
+        this.notificationClient.emit('update-user', new UpdateUserEvent(id, updateUserDto.fullName, null));
       return formattedResponse('success', undefined, records[0].get(0).properties);
     } catch (error) {
       console.log({ error });
@@ -164,7 +169,8 @@ export class UserService {
       );
       const records = result.records;
       if (records.length === 0) return formattedResponse('fail');
-      this.wsClient.emit('imageReady', { userId, imageUrl: url, type });
+      this.wsClient.emit('image-ready', { userId, imageUrl: url, type });
+      if (type === 'avatar') this.notificationClient.emit('update_user', new UpdateUserEvent(userId, null, url));
       return formattedResponse('success', undefined, records[0].get('u').properties);
     } catch (error) {
       console.error({ error });
@@ -219,6 +225,7 @@ export class UserService {
 
       const records = result.records;
       if (records.length === 0) return formattedResponse('fail', 'Friend request already exists');
+      this.notificationClient.emit('create-notification', new FriendRequestEvent(senderId, receiverId));
       return formattedResponse('success');
     } catch (error) {
       console.error({ error });
@@ -245,6 +252,7 @@ export class UserService {
 
       const records = result.records;
       if (records.length === 0) return formattedResponse('fail', 'Friend request not found or already accepted');
+      this.notificationClient.emit('create-notification', new FriendAcceptEvent(senderId, receiverId));
       return formattedResponse('success');
     } catch (error) {
       console.error({ error });
