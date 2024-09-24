@@ -1,13 +1,14 @@
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { INotification, IUserImage } from './notification.interface';
 
-@WebSocketGateway({
+@WebSocketGateway(4000, {
   cors: {
     origin: 'http://localhost'
   },
-  namespace: 'upload-image'
+  namespace: 'notification'
 })
-export class WsGateway {
+export class NotificationGateway {
   @WebSocketServer()
   server: Server;
 
@@ -17,7 +18,11 @@ export class WsGateway {
     client.join(userId);
   }
 
-  notifyImageReady(userId: string, imageUrl: string, type: string) {
-    this.server.to(userId).emit('imageReady', { imageUrl, type });
+  notifyImageReady(data: IUserImage) {
+    this.server.to(data.userId).emit('image-ready', { imageUrl: data.imageUrl, type: data.type });
+  }
+
+  notifyNewNotification(payload: INotification) {
+    this.server.to(payload.receiver).emit('new-notification', payload);
   }
 }

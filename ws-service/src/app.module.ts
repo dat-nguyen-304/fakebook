@@ -1,9 +1,7 @@
 import { Module } from '@nestjs/common';
-import { WsModule } from './ws.module';
-import { WsController } from './ws.controller';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
-  imports: [WsModule],
-  controllers: [WsController]
+  imports: [NotificationModule]
 })
 export class AppModule {}
