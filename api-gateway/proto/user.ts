@@ -117,6 +117,11 @@ export interface AcceptFriendRequestDto {
   receiverId: string;
 }
 
+export interface DeclineFriendRequestDto {
+  senderId: string;
+  receiverId: string;
+}
+
 export const USER_PACKAGE_NAME = "user";
 
 export interface UserServiceClient {
@@ -137,6 +142,8 @@ export interface UserServiceClient {
   sendFriendRequest(request: SendFriendRequestDto): Observable<StatusResponse>;
 
   acceptFriendRequest(request: AcceptFriendRequestDto): Observable<StatusResponse>;
+
+  declineFriendRequest(request: DeclineFriendRequestDto): Observable<StatusResponse>;
 }
 
 export interface UserServiceController {
@@ -163,6 +170,10 @@ export interface UserServiceController {
   acceptFriendRequest(
     request: AcceptFriendRequestDto,
   ): Promise<StatusResponse> | Observable<StatusResponse> | StatusResponse;
+
+  declineFriendRequest(
+    request: DeclineFriendRequestDto,
+  ): Promise<StatusResponse> | Observable<StatusResponse> | StatusResponse;
 }
 
 export function UserServiceControllerMethods() {
@@ -177,6 +188,7 @@ export function UserServiceControllerMethods() {
       "getFriendSuggestions",
       "sendFriendRequest",
       "acceptFriendRequest",
+      "declineFriendRequest",
     ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);

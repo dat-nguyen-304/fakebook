@@ -12,6 +12,7 @@ service UserService {
     rpc GetFriendSuggestions (GetFriendSuggestionsDto) returns (UsersResponse) {}
     rpc SendFriendRequest (SendFriendRequestDto) returns (StatusResponse) {}
     rpc AcceptFriendRequest (AcceptFriendRequestDto) returns (StatusResponse) {}
+    rpc DeclineFriendRequest (DeclineFriendRequestDto) returns (StatusResponse) {}
 }
 
 message User {
@@ -115,6 +116,11 @@ message SendFriendRequestDto {
 }
 
 message AcceptFriendRequestDto {
+    string senderId = 1;
+    string receiverId = 2;
+}
+
+message DeclineFriendRequestDto {
     string senderId = 1;
     string receiverId = 2;
 }

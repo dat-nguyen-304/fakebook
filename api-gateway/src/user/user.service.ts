@@ -52,4 +52,16 @@ export class UserService implements OnModuleInit {
     if (!response.success) throw new BadRequestException(response.message);
     return response.message;
   }
+
+  async acceptFriendRequest(senderId: string, receiverId: string) {
+    const response = await lastValueFrom(this.grpcService.acceptFriendRequest({ senderId, receiverId }));
+    if (!response.success) throw new BadRequestException(response.message);
+    return response.message;
+  }
+
+  async declineFriendRequest(senderId: string, receiverId: string) {
+    const response = await lastValueFrom(this.grpcService.declineFriendRequest({ senderId, receiverId }));
+    if (!response.success) throw new BadRequestException(response.message);
+    return response.message;
+  }
 }

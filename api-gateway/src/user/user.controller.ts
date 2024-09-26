@@ -60,4 +60,14 @@ export class UserController {
   async sendFriendRequest(@Param('id') userId: string, @Body() body: AddFriendRequestDto) {
     return this.userService.sendFriendRequest(userId, body.friendId);
   }
+
+  @Post('/accept-friend-request/:id')
+  async acceptFriendRequest(@Param('id') userId: string, @Body() body: AddFriendRequestDto) {
+    return this.userService.acceptFriendRequest(userId, body.friendId);
+  }
+
+  @Post('/decline-friend-request/:id')
+  async declineFriendRequest(@Param('id') userId: string, @Body() body: AddFriendRequestDto) {
+    return this.userService.declineFriendRequest(userId, body.friendId);
+  }
 }
