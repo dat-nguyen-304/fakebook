@@ -240,11 +240,11 @@ export class UserService {
     try {
       const result = await session.run(
         `
-          MATCH (sender:USER {id: $senderId})-[r:SENT_FRIEND_REQUEST]->(receiver:USER {id: $receiverId})
+          MATCH (sender:USER {id: $receiverId})-[r:SENT_FRIEND_REQUEST]->(receiver:USER {id: $senderId})
           WHERE r.acceptedTime IS NULL
           SET r.acceptedTime = timestamp()
-          CREATE (sender)-[:FRIEND]->(receiver)
-          CREATE (receiver)-[:FRIEND]->(sender)
+          CREATE (sender)-[:FRIEND {since: timestamp()}]->(receiver)
+          CREATE (receiver)-[:FRIEND {since: timestamp()}]->(sender)
           RETURN sender, receiver
         `,
         { senderId, receiverId }
@@ -253,6 +253,30 @@ export class UserService {
       const records = result.records;
       if (records.length === 0) return formattedResponse('fail', 'Friend request not found or already accepted');
       this.notificationClient.emit('create-notification', new FriendAcceptEvent(senderId, receiverId));
+      return formattedResponse('success');
+    } catch (error) {
+      console.error({ error });
+      return formattedResponse('fail');
+    } finally {
+      await session.close();
+    }
+  }
+
+  async declineFriendRequest(senderId: string, receiverId: string) {
+    const session = this.driver.session();
+    try {
+      const result = await session.run(
+        `
+          MATCH (sender:USER {id: $receiverId})-[r:SENT_FRIEND_REQUEST]->(receiver:USER {id: $senderId})
+          WHERE r.acceptedTime IS NULL  
+          SET r.declinedTime = timestamp()
+          RETURN sender, receiver
+        `,
+        { senderId, receiverId }
+      );
+
+      const records = result.records;
+      if (records.length === 0) return formattedResponse('fail', 'Friend request not found');
       return formattedResponse('success');
     } catch (error) {
       console.error({ error });

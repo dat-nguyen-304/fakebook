@@ -10,7 +10,8 @@ import {
   UpdateUserImageRequest,
   SendFriendRequestDto,
   GetFriendSuggestionsDto,
-  AcceptFriendRequestDto
+  AcceptFriendRequestDto,
+  DeclineFriendRequestDto
 } from '@proto/user';
 
 @Controller()
@@ -51,5 +52,9 @@ export class UserController implements UserServiceController {
 
   acceptFriendRequest({ senderId, receiverId }: AcceptFriendRequestDto) {
     return this.userService.acceptFriendRequest(senderId, receiverId);
+  }
+
+  declineFriendRequest({ senderId, receiverId }: DeclineFriendRequestDto) {
+    return this.userService.declineFriendRequest(senderId, receiverId);
   }
 }
