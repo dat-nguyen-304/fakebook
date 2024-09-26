@@ -3,6 +3,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import cn from 'classnames';
 import { useRouter } from 'next/navigation';
+import { useAcceptFriendRequest, useDeclineFriendRequest, useMe } from '@hooks/api/user';
+import { toast } from 'react-toastify';
 
 interface NotificationPopupProps {
   senderId: string;
@@ -13,9 +15,21 @@ interface NotificationPopupProps {
 }
 
 const NotificationPopup: React.FC<NotificationPopupProps> = ({ senderId, senderName, avatar, content, createdAt }) => {
+  const { data: user } = useMe();
   const [visible, setVisible] = useState(true);
   const [hovered, setHovered] = useState(false);
   const [shouldRender, setShouldRender] = useState(true);
+  const {
+    mutate: acceptFriendRequest,
+    isError: isAcceptError,
+    error: acceptError
+  } = useAcceptFriendRequest(String(user?.id));
+  const {
+    mutate: declineFriendRequest,
+    isError: isDeclineError,
+    error: declineError
+  } = useDeclineFriendRequest(String(user?.id));
+
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const router = useRouter();
@@ -42,14 +56,24 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ senderId, senderN
     }
   }, [visible]);
 
+  useEffect(() => {
+    toast.error(acceptError?.message);
+  }, [isAcceptError]);
+
+  useEffect(() => {
+    toast.error(declineError?.message);
+  }, [isDeclineError]);
+
   const handleAccept = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    console.log('accept');
+    acceptFriendRequest({ friendId: senderId });
+    setShouldRender(false);
   };
 
-  const handleReject = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleDecline = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    console.log('reject');
+    declineFriendRequest({ friendId: senderId });
+    setShouldRender(false);
   };
 
   if (!shouldRender) return null;
@@ -83,10 +107,10 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ senderId, senderN
             Accept
           </button>
           <button
-            onClick={e => handleReject(e)}
+            onClick={e => handleDecline(e)}
             className="bg-[#505153] text-white px-[12px] py-[6px] rounded-md text-[13px]"
           >
-            Reject
+            Decline
           </button>
         </div>
       </div>

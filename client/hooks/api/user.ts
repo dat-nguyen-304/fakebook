@@ -65,3 +65,21 @@ export const useSendFriendRequest = (userId: string) => {
     }
   });
 };
+
+export const useAcceptFriendRequest = (userId: string) => {
+  return useMutation<APIResponse<User>, ErrorResponse, { friendId: string }>({
+    mutationFn: async payload => {
+      const response: APIResponse<User> = await axiosClient.post(`/user/accept-friend-request/${userId}`, payload);
+      return response;
+    }
+  });
+};
+
+export const useDeclineFriendRequest = (userId: string) => {
+  return useMutation<APIResponse<User>, ErrorResponse, { friendId: string }>({
+    mutationFn: async payload => {
+      const response: APIResponse<User> = await axiosClient.post(`/user/decline-friend-request/${userId}`, payload);
+      return response;
+    }
+  });
+};
