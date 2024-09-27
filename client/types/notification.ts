@@ -4,5 +4,6 @@ export interface INotification {
   senderName: string;
   senderAvatar: string;
   seen: boolean;
+  type: string;
   createdAt: Date;
 }

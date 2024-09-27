@@ -10,11 +10,19 @@ interface NotificationPopupProps {
   senderId: string;
   senderName: string;
   avatar: string;
+  type: string;
   content: string;
   createdAt: Date;
 }
 
-const NotificationPopup: React.FC<NotificationPopupProps> = ({ senderId, senderName, avatar, content, createdAt }) => {
+const NotificationPopup: React.FC<NotificationPopupProps> = ({
+  senderId,
+  senderName,
+  avatar,
+  type,
+  content,
+  createdAt
+}) => {
   const { data: user } = useMe();
   const [visible, setVisible] = useState(true);
   const [hovered, setHovered] = useState(false);
@@ -34,20 +42,18 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ senderId, senderN
 
   const router = useRouter();
 
-  useEffect(() => {
+  const startTimer = () => {
     timerRef.current = setTimeout(() => setVisible(false), 5000);
+  };
+
+  useEffect(() => {
+    if (!hovered) {
+      startTimer();
+    }
     setVisible(true);
     setShouldRender(true);
     return () => clearTimeout(timerRef.current as NodeJS.Timeout);
-  }, [senderId, senderName, avatar, content, createdAt]);
-
-  useEffect(() => {
-    if (hovered) {
-      clearTimeout(timerRef.current as NodeJS.Timeout);
-      setVisible(true);
-    }
-    return () => clearTimeout(timerRef.current as NodeJS.Timeout);
-  }, [hovered]);
+  }, [senderId, senderName, avatar, content, createdAt, hovered]);
 
   useEffect(() => {
     if (!visible) {
@@ -81,7 +87,7 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ senderId, senderN
   return (
     <div
       className={cn(
-        'fixed bottom-5 left-5 cursor-pointer bg-[#242526] shadow-xl text-white p-4 rounded-lg flex items-center transition-opacity duration-[2000ms]',
+        'fixed bottom-5 left-5 max-w-[400px] cursor-pointer bg-[#242526] shadow-xl text-white p-4 rounded-lg flex items-center transition-opacity duration-[2000ms]',
         visible ? 'opacity-100' : 'opacity-0'
       )}
       onClick={() => {
@@ -99,20 +105,22 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ senderId, senderN
         <small className="text-[#0b60e9] text-[13px]">
           {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
         </small>
-        <div className="mt-2 flex gap-1">
-          <button
-            onClick={e => handleAccept(e)}
-            className="bg-[#0866ff] text-white px-[12px] py-[6px] rounded-md text-[13px]"
-          >
-            Accept
-          </button>
-          <button
-            onClick={e => handleDecline(e)}
-            className="bg-[#505153] text-white px-[12px] py-[6px] rounded-md text-[13px]"
-          >
-            Decline
-          </button>
-        </div>
+        {type === 'FRIEND_REQUEST' ? (
+          <div className="mt-2 flex gap-1">
+            <button
+              onClick={e => handleAccept(e)}
+              className="bg-[#0866ff] text-white px-[12px] py-[6px] rounded-md text-[13px]"
+            >
+              Accept
+            </button>
+            <button
+              onClick={e => handleDecline(e)}
+              className="bg-[#505153] text-white px-[12px] py-[6px] rounded-md text-[13px]"
+            >
+              Decline
+            </button>
+          </div>
+        ) : null}
       </div>
       <div className="ml-2 w-2 h-2 bg-[#0b60e9] rounded-full"></div>
     </div>

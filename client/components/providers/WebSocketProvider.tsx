@@ -3,8 +3,8 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import { useMe } from '@hooks/api/user';
 import { notificationSocket } from '@socket/socket';
-import NotificationPopup from '@components/common/NotificationPopup';
 import { INotification } from '@types';
+import NotificationPopup from '@components/common/NotificationPopup';
 
 interface WebSocketProviderProps {
   children: ReactNode;
@@ -51,6 +51,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
           senderId={notification.sender}
           senderName={notification.senderName}
           avatar={notification.senderAvatar}
+          type={notification.type}
           content={notification.content}
           createdAt={notification.createdAt}
         />
