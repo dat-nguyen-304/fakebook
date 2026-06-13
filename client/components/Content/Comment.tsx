@@ -10,10 +10,16 @@ interface CommentProps {
   comment: IComment;
   onReply: (parentId: string, content: string) => void;
   onToggleLike: (id: string) => void;
+  depth?: number;
 }
 
-const Comment: React.FC<CommentProps> = ({ comment, onReply, onToggleLike }) => {
+// Indent only the first two levels (like Facebook); deeper replies render flush
+// so a long thread never marches off the right edge of the narrow sidebar.
+const MAX_INDENT_DEPTH = 2;
+
+const Comment: React.FC<CommentProps> = ({ comment, onReply, onToggleLike, depth = 0 }) => {
   const [showReplyInput, setShowReplyInput] = useState(false);
+  const indent = depth < MAX_INDENT_DEPTH;
 
   const handleReply = (content: string) => {
     onReply(comment.id, content);
@@ -60,11 +66,11 @@ const Comment: React.FC<CommentProps> = ({ comment, onReply, onToggleLike }) => 
         </div>
       </div>
 
-      {/* Replies (indented) + inline reply composer */}
+      {/* Replies (indented up to MAX_INDENT_DEPTH) + inline reply composer */}
       {(comment.replies?.length || showReplyInput) && (
-        <div className="ml-[40px] mt-2 flex flex-col gap-3 border-l-2 border-[#3e4042] pl-3">
+        <div className={cn('mt-2 flex flex-col gap-3', indent && 'ml-[40px] border-l-2 border-[#3e4042] pl-3')}>
           {comment.replies?.map(reply => (
-            <Comment key={reply.id} comment={reply} onReply={onReply} onToggleLike={onToggleLike} />
+            <Comment key={reply.id} comment={reply} onReply={onReply} onToggleLike={onToggleLike} depth={depth + 1} />
           ))}
           {showReplyInput && (
             <CommentInput

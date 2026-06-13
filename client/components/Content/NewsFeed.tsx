@@ -22,9 +22,9 @@ const NewsFeed: React.FC<NewsFeedProps> = () => {
       {/* Image posts open the full-screen theater; text posts use the centered popup. */}
       {selectedPost &&
         (selectedPost.image ? (
-          <PhotoTheaterModal post={selectedPost} isOpen onClose={close} />
+          <PhotoTheaterModal key={selectedPost.id} post={selectedPost} isOpen onClose={close} />
         ) : (
-          <PostModal post={selectedPost} isOpen onClose={close} />
+          <PostModal key={selectedPost.id} post={selectedPost} isOpen onClose={close} />
         ))}
     </div>
   );

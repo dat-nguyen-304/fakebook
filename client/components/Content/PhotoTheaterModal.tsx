@@ -4,13 +4,10 @@ import { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { AiFillLike, AiOutlineLike } from 'react-icons/ai';
-import { FaRegComment, FaFacebook } from 'react-icons/fa';
-import { RiShareForwardLine } from 'react-icons/ri';
+import { FaFacebook } from 'react-icons/fa';
 import { BsThreeDots } from 'react-icons/bs';
 import { MdPublic } from 'react-icons/md';
 import { RxCross1 } from 'react-icons/rx';
-import cn from 'classnames';
 import { usePostInteractions } from '@hooks/client/usePostInteractions';
 import { useOpenModal } from '@hooks/client/useOpenModal';
 import { useMe } from '@hooks/api/user';
@@ -18,6 +15,7 @@ import HeaderNotification from '@components/header/HeaderNotification';
 import { IPost } from '@types';
 import Comment from './Comment';
 import CommentInput from './CommentInput';
+import PostEngagement from './PostEngagement';
 
 interface PhotoTheaterModalProps {
   post: IPost;
@@ -128,38 +126,14 @@ const PhotoTheaterModal: React.FC<PhotoTheaterModalProps> = ({ post, isOpen, onC
         <div className="min-h-0 flex-1 overflow-y-auto p-4">
           <p className="text-[15px] text-[#e4e6eb]">{post.content}</p>
 
-          <div className="mt-3 flex items-center justify-between text-[15px] font-light text-[#b0b3b8]">
-            <div className="flex items-center gap-1">
-              <div className="flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#0780ff]">
-                <AiFillLike className="h-[11px] w-[11px] text-white" />
-              </div>
-              <span>{likes}</span>
-            </div>
-            <div className="flex gap-3">
-              <span>{commentCount} comments</span>
-              <span>{post.shares} shares</span>
-            </div>
-          </div>
-
-          <div className="mt-2 grid grid-cols-3 border-y border-[#3e4042] py-[2px]">
-            <button
-              onClick={togglePostLike}
-              className={cn(
-                'flex w-full items-center justify-center gap-2 rounded-md py-[6px] font-semibold hover:bg-[#3a3b3c]',
-                liked ? 'text-[#0866ff]' : 'text-[#b0b3b8]'
-              )}
-            >
-              {liked ? <AiFillLike size={20} /> : <AiOutlineLike size={20} />}
-              <span className="text-[15px]">Like</span>
-            </button>
-            <button className="flex w-full items-center justify-center gap-2 rounded-md py-[6px] text-[#b0b3b8] hover:bg-[#3a3b3c]">
-              <FaRegComment size={18} />
-              <span className="text-[15px]">Comment</span>
-            </button>
-            <button className="flex w-full items-center justify-center gap-2 rounded-md py-[6px] text-[#b0b3b8] hover:bg-[#3a3b3c]">
-              <RiShareForwardLine size={20} />
-              <span className="text-[15px]">Share</span>
-            </button>
+          <div className="mt-3">
+            <PostEngagement
+              likes={likes}
+              commentCount={commentCount}
+              shares={post.shares}
+              liked={liked}
+              onToggleLike={togglePostLike}
+            />
           </div>
 
           <div className="mt-3 flex flex-col gap-4">

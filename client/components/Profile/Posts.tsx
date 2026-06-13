@@ -26,9 +26,9 @@ const Posts: React.FC<PostsProps> = () => {
 
       {selectedPost &&
         (selectedPost.image ? (
-          <PhotoTheaterModal post={selectedPost} isOpen onClose={close} />
+          <PhotoTheaterModal key={selectedPost.id} post={selectedPost} isOpen onClose={close} />
         ) : (
-          <PostModal post={selectedPost} isOpen onClose={close} />
+          <PostModal key={selectedPost.id} post={selectedPost} isOpen onClose={close} />
         ))}
     </div>
   );
