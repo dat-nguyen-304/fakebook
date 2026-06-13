@@ -79,28 +79,32 @@ input {
   color: #e0e2e6 !important;
 }
 
-/* width */
+/* Custom scrollbar (global) — thin, rounded, subtle dark thumb */
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #555759 transparent;
+}
+
+/* WebKit (Chrome, Edge, Safari) */
 ::-webkit-scrollbar {
-  width: 16px;
+  width: 10px;
+  height: 10px;
 }
 
-.modal ::-webkit-scrollbar {
-  width: 8px;
-}
-
-/* Track */
 ::-webkit-scrollbar-track {
-  background: #424242;
+  background: transparent;
 }
 
-/* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #686868;
-  border-radius: 2px;
+  background-color: #555759;
+  border-radius: 9999px;
+  /* transparent border + content-box clip makes the thumb look slimmer with padding */
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
-/* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #7b7b7b;
-  border-radius: 2px;
+  background-color: #6a6c6e;
 }

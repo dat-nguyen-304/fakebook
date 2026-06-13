@@ -29,7 +29,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user, onOpen }) => {
   }, [isError, isSuccess]);
 
   return (
-    <div className="fixed top-[57px] rounded-md shadow-md right-[20px] w-[360px] bg-[#242526] text-[#b0b3b8] p-[8px]">
+    <div className="fixed top-[57px] rounded-md border border-[#3e4042] shadow-2xl right-[20px] w-[360px] bg-[#242526] text-[#b0b3b8] p-[8px]">
       <Link
         href={`/${user.id}`}
         onClick={() => {
