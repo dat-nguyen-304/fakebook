@@ -37,6 +37,10 @@ for svc in "${SERVICES[@]}"; do
     echo "WARNING: directory '$svc' not found, skipping."
     continue
   fi
+  if [[ ! -d "$svc/node_modules" ]]; then
+    echo "WARNING: $svc/node_modules not found — run 'npm install' inside $svc first, skipping."
+    continue
+  fi
   echo "Starting $svc..."
   (cd "$svc" && npm run start:dev 2>&1 | sed "s/^/[$svc] /") &
   PIDS+=($!)
@@ -44,4 +48,11 @@ done
 
 echo ""
 echo "All services started. Press Ctrl+C to stop."
+
+# Give services a moment to start, then check none exited immediately
+sleep 3
+for pid in "${PIDS[@]}"; do
+  kill -0 "$pid" 2>/dev/null || echo "WARNING: a service exited early (PID $pid) — check logs above"
+done
+
 wait

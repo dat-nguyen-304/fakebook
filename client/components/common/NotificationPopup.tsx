@@ -67,7 +67,7 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({
           toast.success('Friend request accepted!');
           setShouldRender(false);
         },
-        onError: (err: any) => {
+        onError: (err: Error) => {
           toast.error(err?.message || 'Failed to accept friend request');
         }
       }
@@ -87,7 +87,7 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({
           toast.success('Friend request declined');
           setShouldRender(false);
         },
-        onError: (err: any) => {
+        onError: (err: Error) => {
           toast.error(err?.message || 'Failed to decline friend request');
         }
       }
