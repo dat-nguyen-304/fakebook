@@ -7,9 +7,8 @@ interface ContactsProps {}
 const Contacts: React.FC<ContactsProps> = () => {
   const { onChangeOpen, open } = useChatBox();
   return (
-    <div>
-      <div className="w-1/4 mt-[56px] py-[6px] px-[12px] text-[#b0b3b8] font-[15px] fixed top-0">
-        <h3 className="text-[17px] font-bold mt-[10px]">Contacts</h3>
+    <aside className="hidden lg:block w-[300px] shrink-0 self-start sticky top-[56px] max-h-[calc(100vh-56px)] overflow-y-auto py-4 pr-4 text-[#b0b3b8] text-[15px]">
+      <h3 className="text-[17px] font-bold">Contacts</h3>
         <div
           onClick={() => onChangeOpen(!open)}
           className="flex items-center gap-2 mt-[10px] p-2 rounded-lg hover:bg-[#3a3b3c] hover:cursor-pointer"
@@ -48,8 +47,7 @@ const Contacts: React.FC<ContactsProps> = () => {
           </div>
           <p className="text-[#e4e6eb]">Nguyễn Văn An</p>
         </div>
-      </div>
-    </div>
+    </aside>
   );
 };
 

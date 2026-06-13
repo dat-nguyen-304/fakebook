@@ -53,11 +53,11 @@ export default function FriendSuggestion() {
           </div>
           <div className="col-span-3 p-[20px]">
             <h3 className="text-[20px] text-[#e4e6eb] font-bold mb-[16px]">People you may know</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 3xl:grid-cols-8 4xl:grid-cols-10 gap-2">
               {users.map(suggestion => (
-                <div key={suggestion.id} className="shadow-border rounded-md overflow-hidden mt-1">
-                  <div className="">
-                    <Image src={suggestion.avatar} alt="" width={232} height={232} className="rounded-md" />
+                <div key={suggestion.id} className="shadow-border rounded-md overflow-hidden mt-1 flex flex-col">
+                  <div className="relative w-full aspect-square">
+                    <Image src={suggestion.avatar} alt="" fill className="object-cover" />
                   </div>
                   <div className="bg-[#242526] text-[#e4e6eb] font-semibold py-[8px] px-[12px] ">
                     <h4 className="text-[17px] font-bold">{suggestion.fullName}</h4>
