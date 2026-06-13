@@ -1,12 +1,12 @@
-{
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "project": ["tsconfig.json"],
-    "tsconfigRootDir": "./",
-    "ecmaVersion": "latest",
-    "sourceType": "module"
+module.exports = {
+  parser: "@typescript-eslint/parser",
+  parserOptions: {
+    project: ["tsconfig.json"],
+    tsconfigRootDir: __dirname,
+    ecmaVersion: "latest",
+    sourceType: "module"
   },
-  "extends": [
+  extends: [
     "prettier",
     "next/core-web-vitals",
     "next",
@@ -14,8 +14,8 @@
     "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended"
   ],
-  "plugins": ["@typescript-eslint"],
-  "rules": {
+  plugins: ["@typescript-eslint"],
+  rules: {
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": ["warn"],
     "@typescript-eslint/explicit-module-boundary-types": "off",
@@ -23,4 +23,4 @@
     "@typescript-eslint/no-empty-object-type": "off",
     "react-hooks/exhaustive-deps": "off"
   }
-}
+};

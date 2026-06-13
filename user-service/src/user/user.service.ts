@@ -170,7 +170,7 @@ export class UserService {
       const records = result.records;
       if (records.length === 0) return formattedResponse('fail');
       this.wsClient.emit('image-ready', { userId, imageUrl: url, type });
-      if (type === 'avatar') this.notificationClient.emit('update_user', new UpdateUserEvent(userId, null, url));
+      if (type === 'avatar') this.notificationClient.emit('update-user', new UpdateUserEvent(userId, null, url));
       return formattedResponse('success', undefined, records[0].get('u').properties);
     } catch (error) {
       console.error({ error });

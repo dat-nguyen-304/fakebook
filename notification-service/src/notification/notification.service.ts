@@ -14,7 +14,7 @@ export class NotificationService {
     @InjectModel(Notification.name) private notificationModel: Model<Notification>,
     @Inject('WS_SERVICE') private readonly wsClient: ClientProxy,
     private userService: UserService
-  ) {}
+  ) { }
 
   getContent(type: string) {
     switch (type) {
@@ -31,7 +31,7 @@ export class NotificationService {
     const { sender, receiver, type } = payload;
     const content = this.getContent(type);
     const user = await this.userService.findByIds([sender]);
-    if (!user) {
+    if (!user || user.length === 0) {
       return formattedResponse('fail', 'User not found', undefined);
     }
     const senderAvatar = user[0].avatar;

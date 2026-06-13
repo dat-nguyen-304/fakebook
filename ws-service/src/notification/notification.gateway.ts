@@ -4,7 +4,7 @@ import { INotification, IUserImage } from './notification.interface';
 
 @WebSocketGateway(4000, {
   cors: {
-    origin: 'http://localhost'
+    origin: 'http://localhost:3005'
   },
   namespace: 'notification'
 })

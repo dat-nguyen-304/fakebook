@@ -1,0 +1,143 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: fakebook-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  neo4j:
+    image: neo4j:5
+    container_name: fakebook-neo4j
+    ports:
+      - "7474:7474"   # browser UI
+      - "7687:7687"   # bolt
+    environment:
+      NEO4J_AUTH: neo4j/neo4j_password
+    volumes:
+      - neo4j_data:/data
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: fakebook-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: fakebook
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # OLD (Zookeeper mode — Kafka ≤ 3.x with external coordinator)
+  # ---------------------------------------------------------------------------
+  # Zookeeper was a separate process that every Kafka broker had to connect to.
+  # It stored cluster metadata (broker list, topic configs, partition leaders,
+  # ACLs) and ran leader-election. Drawbacks: extra service to run/monitor,
+  # metadata ops go through a network round-trip, and scaling beyond ~200k
+  # partitions became painful.
+  #
+  # zookeeper:
+  #   image: confluentinc/cp-zookeeper:7.6.0
+  #   container_name: fakebook-zookeeper
+  #   environment:
+  #     ZOOKEEPER_CLIENT_PORT: 2181   # port brokers connect to
+  #     ZOOKEEPER_TICK_TIME: 2000     # heartbeat interval in ms
+  #   restart: unless-stopped
+  #
+  # kafka-1:
+  #   image: confluentinc/cp-kafka:7.6.0
+  #   depends_on:
+  #     - zookeeper                   # must wait for ZK before starting
+  #   environment:
+  #     KAFKA_BROKER_ID: 1                       # static integer, set manually
+  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181  # tells broker where ZK is
+  #     KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092
+  #     KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-1:29092,EXTERNAL://localhost:9092
+  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+  #     KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+  #     KAFKA_DEFAULT_REPLICATION_FACTOR: 2
+  # ---------------------------------------------------------------------------
+
+  # ---------------------------------------------------------------------------
+  # NEW (KRaft mode — Kafka 3.3+, no Zookeeper)
+  # ---------------------------------------------------------------------------
+  # KRaft (Kafka Raft) moves metadata management inside Kafka itself. Each
+  # broker can now also act as a "controller" (the role ZK used to fill).
+  # Controllers use the Raft consensus algorithm to elect a leader and replicate
+  # the cluster metadata log — no external process needed.
+  # ---------------------------------------------------------------------------
+
+  kafka-1:
+    image: confluentinc/cp-kafka:7.7.1
+    container_name: fakebook-kafka-1
+    ports:
+      - "9092:9092"
+    environment:
+      # Shared UUID that identifies this cluster. All brokers in the same
+      # cluster must use the identical value. Generated once with:
+      #   docker run --rm confluentinc/cp-kafka:7.7.1 kafka-storage random-uuid
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+
+      # Replaces KAFKA_BROKER_ID. Must be unique per node and must match the
+      # IDs listed in KAFKA_CONTROLLER_QUORUM_VOTERS.
+      KAFKA_NODE_ID: 1
+
+      # This node runs both a broker (serves producers/consumers) and a
+      # controller (participates in Raft metadata quorum). You can separate
+      # these roles onto dedicated nodes in large clusters.
+      KAFKA_PROCESS_ROLES: broker,controller
+
+      # The full list of controller nodes that form the Raft quorum.
+      # Format: <nodeId>@<host>:<controllerPort>
+      # With 2 nodes the quorum requires BOTH to be up (majority = 2/2).
+      # Use 3 nodes in production so you can tolerate one failure.
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka-1:29091,2@kafka-2:29091'
+
+      # Three listeners on this broker:
+      #   CONTROLLER — used only for Raft traffic between controllers (port 29091)
+      #   INTERNAL   — broker-to-broker replication inside Docker (port 29092)
+      #   EXTERNAL   — client connections from the host machine (port 9092)
+      KAFKA_LISTENERS: CONTROLLER://0.0.0.0:29091,INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-1:29092,EXTERNAL://localhost:9092
+
+      # CONTROLLER must be mapped here even though it is not advertised.
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+      # Tells the broker which listener name carries Raft (controller) traffic.
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 2
+    restart: unless-stopped
+
+  kafka-2:
+    image: confluentinc/cp-kafka:7.7.1
+    container_name: fakebook-kafka-2
+    ports:
+      - "9093:9093"
+    environment:
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+      KAFKA_NODE_ID: 2
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka-1:29091,2@kafka-2:29091'
+      KAFKA_LISTENERS: CONTROLLER://0.0.0.0:29091,INTERNAL://0.0.0.0:29093,EXTERNAL://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-2:29093,EXTERNAL://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 2
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  neo4j_data:
+  postgres_data:

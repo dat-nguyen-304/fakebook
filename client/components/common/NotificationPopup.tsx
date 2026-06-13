@@ -27,16 +27,8 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({
   const [visible, setVisible] = useState(true);
   const [hovered, setHovered] = useState(false);
   const [shouldRender, setShouldRender] = useState(true);
-  const {
-    mutate: acceptFriendRequest,
-    isError: isAcceptError,
-    error: acceptError
-  } = useAcceptFriendRequest(String(user?.id));
-  const {
-    mutate: declineFriendRequest,
-    isError: isDeclineError,
-    error: declineError
-  } = useDeclineFriendRequest(String(user?.id));
+  const { mutate: acceptFriendRequest } = useAcceptFriendRequest(String(user?.id));
+  const { mutate: declineFriendRequest } = useDeclineFriendRequest(String(user?.id));
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -62,24 +54,44 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({
     }
   }, [visible]);
 
-  useEffect(() => {
-    toast.error(acceptError?.message);
-  }, [isAcceptError]);
-
-  useEffect(() => {
-    toast.error(declineError?.message);
-  }, [isDeclineError]);
-
   const handleAccept = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    acceptFriendRequest({ friendId: senderId });
-    setShouldRender(false);
+    if (!user?.id) {
+      toast.error('User information not loaded yet');
+      return;
+    }
+    acceptFriendRequest(
+      { friendId: senderId },
+      {
+        onSuccess: () => {
+          toast.success('Friend request accepted!');
+          setShouldRender(false);
+        },
+        onError: (err: any) => {
+          toast.error(err?.message || 'Failed to accept friend request');
+        }
+      }
+    );
   };
 
   const handleDecline = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    declineFriendRequest({ friendId: senderId });
-    setShouldRender(false);
+    if (!user?.id) {
+      toast.error('User information not loaded yet');
+      return;
+    }
+    declineFriendRequest(
+      { friendId: senderId },
+      {
+        onSuccess: () => {
+          toast.success('Friend request declined');
+          setShouldRender(false);
+        },
+        onError: (err: any) => {
+          toast.error(err?.message || 'Failed to decline friend request');
+        }
+      }
+    );
   };
 
   if (!shouldRender) return null;
