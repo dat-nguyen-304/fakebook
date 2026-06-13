@@ -7,7 +7,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'res.cloudinary.comm',
+        hostname: 'res.cloudinary.com',
         port: '',
         pathname: '/fakebook-2025/image/upload/*'
       }

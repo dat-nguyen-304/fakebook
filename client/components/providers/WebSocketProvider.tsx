@@ -17,28 +17,40 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
   useEffect(() => {
     if (!user?.id) return;
 
-    if (!notificationSocket.connected) notificationSocket.connect();
-
-    notificationSocket.on('connect', () => {
+    const onConnect = () => {
       console.log('Connected to WebSocket server');
-      const userId = user.id;
-      notificationSocket.emit('join', userId);
-    });
+      notificationSocket.emit('join', user.id);
+    };
 
-    notificationSocket.on('connect_error', err => {
-      console.error('Connection error:', err);
-    });
-
-    notificationSocket.on('disconnect', () => {
-      console.log('Disconnected from WebSocket server');
-    });
-
-    notificationSocket.on('new-notification', data => {
+    const onNotification = (data: INotification) => {
       console.log('New notification received:', data);
       setNotification(data);
-    });
+    };
+
+    const onConnectError = (err: any) => {
+      console.error('Connection error:', err);
+    };
+
+    const onDisconnect = () => {
+      console.log('Disconnected from WebSocket server');
+    };
+
+    if (notificationSocket.connected) {
+      onConnect();
+    } else {
+      notificationSocket.connect();
+    }
+
+    notificationSocket.on('connect', onConnect);
+    notificationSocket.on('connect_error', onConnectError);
+    notificationSocket.on('disconnect', onDisconnect);
+    notificationSocket.on('new-notification', onNotification);
 
     return () => {
+      notificationSocket.off('connect', onConnect);
+      notificationSocket.off('connect_error', onConnectError);
+      notificationSocket.off('disconnect', onDisconnect);
+      notificationSocket.off('new-notification', onNotification);
       notificationSocket.disconnect();
     };
   }, [user?.id]);

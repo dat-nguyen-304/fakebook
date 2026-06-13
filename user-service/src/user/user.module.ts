@@ -27,9 +27,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
             client: {
               clientId: 'notification',
               brokers: [configService.get<string>('KAFKA_BROKER_1'), configService.get<string>('KAFKA_BROKER_2')]
-            },
-            consumer: {
-              groupId: 'notification-consumer'
             }
           }
         }),
