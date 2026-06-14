@@ -1,5 +1,5 @@
 import { CreateUserDto, LoginDto, UpdateUserDto, UpdateUserImageDto, UserResponse } from '@proto/user';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import neo4j, { Driver } from 'neo4j-driver';
@@ -9,7 +9,7 @@ import { ClientKafka, ClientProxy } from '@nestjs/microservices';
 import { CreateUserEvent, FriendAcceptEvent, FriendRequestEvent, UpdateUserEvent } from './notification.event';
 
 @Injectable()
-export class UserService {
+export class UserService implements OnModuleInit {
   private driver: Driver;
 
   constructor(
@@ -21,6 +21,18 @@ export class UserService {
       this.configService.get('NEO4J_HOST'),
       neo4j.auth.basic(this.configService.get('NEO4J_USERNAME'), this.configService.get('NEO4J_PASSWORD'))
     );
+  }
+
+  async onModuleInit() {
+    const session = this.driver.session();
+    try {
+      await session.run('CREATE CONSTRAINT user_username_unique IF NOT EXISTS FOR (u:USER) REQUIRE u.username IS UNIQUE');
+      await session.run('CREATE INDEX user_id_index IF NOT EXISTS FOR (u:USER) ON (u.id)');
+    } catch (error) {
+      console.error('Failed to initialize Neo4j schema:', error);
+    } finally {
+      await session.close();
+    }
   }
 
   async findByUsername(username: string) {
