@@ -28,6 +28,8 @@ export class UserService implements OnModuleInit {
     try {
       await session.run('CREATE CONSTRAINT user_username_unique IF NOT EXISTS FOR (u:USER) REQUIRE u.username IS UNIQUE');
       await session.run('CREATE INDEX user_id_index IF NOT EXISTS FOR (u:USER) ON (u.id)');
+    } catch (error) {
+      console.error('Failed to initialize Neo4j schema:', error);
     } finally {
       await session.close();
     }
