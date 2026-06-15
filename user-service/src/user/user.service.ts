@@ -1,4 +1,4 @@
-import { CreateUserDto, LoginDto, UpdateUserDto, UpdateUserImageDto, UserResponse } from '@proto/user';
+import { CreateUserDto, LoginDto, PaginationDto, UpdateUserDto, UpdateUserImageDto, UserResponse } from '@proto/user';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { ConfigService } from '@nestjs/config';
@@ -33,6 +33,13 @@ export class UserService implements OnModuleInit {
     } finally {
       await session.close();
     }
+  }
+
+  /** Strip the argon2 `password` hash from a Neo4j node's properties before it leaves the service. */
+  private sanitize(properties: Record<string, any>) {
+    if (!properties) return properties;
+    const { password, ...rest } = properties;
+    return rest;
   }
 
   async findByUsername(username: string) {
@@ -113,11 +120,17 @@ export class UserService implements OnModuleInit {
     }
   }
 
-  async findAll() {
+  async findAll(pagination?: PaginationDto) {
     const session = this.driver.session();
     try {
-      const result = await session.run('MATCH (user:USER) RETURN user;');
-      const users = result.records.map(record => record.get('user').properties);
+      const page = Math.max(1, pagination?.page || 1);
+      const limit = Math.min(100, Math.max(1, pagination?.limit || 20));
+      const skip = (page - 1) * limit;
+      const result = await session.run(
+        'MATCH (user:USER) RETURN user ORDER BY user.createdDate SKIP $skip LIMIT $limit;',
+        { skip: neo4j.int(skip), limit: neo4j.int(limit) }
+      );
+      const users = result.records.map(record => this.sanitize(record.get('user').properties));
       return formattedResponse('success', undefined, users);
     } catch (error) {
       console.log({ error });
@@ -134,7 +147,7 @@ export class UserService implements OnModuleInit {
 
       const records = result.records;
       if (records.length === 0) return formattedResponse('fail');
-      return formattedResponse('success', undefined, records[0].get(0).properties);
+      return formattedResponse('success', undefined, this.sanitize(records[0].get(0).properties));
     } catch (error) {
       console.log({ error });
       return formattedResponse('fail');
@@ -157,7 +170,7 @@ export class UserService implements OnModuleInit {
       if (records.length === 0) return formattedResponse('fail');
       if (updateUserDto.fullName)
         this.notificationClient.emit('update-user', new UpdateUserEvent(id, updateUserDto.fullName, null));
-      return formattedResponse('success', undefined, records[0].get(0).properties);
+      return formattedResponse('success', undefined, this.sanitize(records[0].get(0).properties));
     } catch (error) {
       console.log({ error });
       return formattedResponse('fail');
@@ -183,7 +196,7 @@ export class UserService implements OnModuleInit {
       if (records.length === 0) return formattedResponse('fail');
       this.wsClient.emit('image-ready', { userId, imageUrl: url, type });
       if (type === 'avatar') this.notificationClient.emit('update-user', new UpdateUserEvent(userId, null, url));
-      return formattedResponse('success', undefined, records[0].get('u').properties);
+      return formattedResponse('success', undefined, this.sanitize(records[0].get('u').properties));
     } catch (error) {
       console.error({ error });
       return formattedResponse('fail');
@@ -208,7 +221,7 @@ export class UserService implements OnModuleInit {
         { userId }
       );
 
-      const users = result.records.map(record => record.get('user').properties);
+      const users = result.records.map(record => this.sanitize(record.get('user').properties));
       return formattedResponse('success', undefined, users);
     } catch (error) {
       console.error({ error });

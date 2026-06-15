@@ -58,7 +58,7 @@ export interface StatusResponse {
 
 export interface PaginationDto {
   page: number;
-  skip: number;
+  limit: number;
 }
 
 export interface UpdateUserRequest {
@@ -129,7 +129,7 @@ export interface UserServiceClient {
 
   login(request: LoginDto): Observable<UserResponse>;
 
-  findAllUsers(request: Empty): Observable<UsersResponse>;
+  findAllUsers(request: PaginationDto): Observable<UsersResponse>;
 
   findOneUser(request: FindOneUserDto): Observable<UserResponse>;
 
@@ -151,7 +151,7 @@ export interface UserServiceController {
 
   login(request: LoginDto): Promise<UserResponse> | Observable<UserResponse> | UserResponse;
 
-  findAllUsers(request: Empty): Promise<UsersResponse> | Observable<UsersResponse> | UsersResponse;
+  findAllUsers(request: PaginationDto): Promise<UsersResponse> | Observable<UsersResponse> | UsersResponse;
 
   findOneUser(request: FindOneUserDto): Promise<UserResponse> | Observable<UserResponse> | UserResponse;
 
