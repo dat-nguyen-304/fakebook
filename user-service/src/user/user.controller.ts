@@ -6,6 +6,7 @@ import {
   UserServiceControllerMethods,
   FindOneUserDto,
   LoginDto,
+  PaginationDto,
   UpdateUserRequest,
   UpdateUserImageRequest,
   SendFriendRequestDto,
@@ -26,8 +27,8 @@ export class UserController implements UserServiceController {
     return this.userService.login(loginDto);
   }
 
-  findAllUsers() {
-    return this.userService.findAll();
+  findAllUsers(paginationDto: PaginationDto) {
+    return this.userService.findAll(paginationDto);
   }
 
   findOneUser(findOneUserDto: FindOneUserDto) {

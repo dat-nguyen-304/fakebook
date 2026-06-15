@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Patch,
+  Query,
   Post,
   UploadedFile,
   UseGuards,
@@ -27,8 +28,8 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('')
-  getAll() {
-    return this.userService.getAll();
+  getAll(@Query('page') page?: string, @Query('limit') limit?: string) {
+    return this.userService.getAll(Number(page) || 0, Number(limit) || 0);
   }
 
   @Get('me')

@@ -5,7 +5,7 @@ package user;
 service UserService {
     rpc CreateUser (CreateUserDto) returns (UserResponse) {}
     rpc Login (LoginDto) returns (UserResponse) {}
-    rpc FindAllUsers (Empty) returns (UsersResponse) {}
+    rpc FindAllUsers (PaginationDto) returns (UsersResponse) {}
     rpc FindOneUser (FindOneUserDto) returns (UserResponse) {}
     rpc UpdateUser (UpdateUserRequest) returns (UserResponse) {}
     rpc UpdateUserImage (UpdateUserImageRequest) returns (UserResponse) {}
@@ -61,7 +61,7 @@ message StatusResponse {
 
 message PaginationDto {
     int32 page = 1;
-    int32 skip = 2;
+    int32 limit = 2;
 }
 
 message UpdateUserRequest {

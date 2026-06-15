@@ -17,8 +17,8 @@ export class UserService implements OnModuleInit {
     this.grpcService = this.client.getService<UserServiceClient>(USER_SERVICE_NAME);
   }
 
-  async getAll() {
-    const response = await lastValueFrom(this.grpcService.findAllUsers({}));
+  async getAll(page = 0, limit = 0) {
+    const response = await lastValueFrom(this.grpcService.findAllUsers({ page, limit }));
     if (!response.success) throw new BadRequestException(response.message);
     return response.data;
   }
