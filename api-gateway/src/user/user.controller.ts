@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   Param,
   Patch,
@@ -38,37 +39,65 @@ export class UserController {
   }
 
   @Patch(':id')
-  update(@Param('id') userId: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(userId, updateUserDto);
+  update(@Param('id') userId: string, @GetUser() user: TokenPayload, @Body() updateUserDto: UpdateUserDto) {
+    this.assertSelf(userId, user);
+    return this.userService.update(user.id, updateUserDto);
   }
 
   @Post('/image/:id')
   @UseInterceptors(FileInterceptor('image', { storage: memoryStorage() }))
   async updateImage(
     @Param('id') userId: string,
+    @GetUser() user: TokenPayload,
     @UploadedFile() image: Express.Multer.File,
     @Body() updateUserImage: UpdateUserImageDto //used for post newfeeds
   ) {
-    return this.userService.updateImage(userId, image, updateUserImage.type);
+    this.assertSelf(userId, user);
+    return this.userService.updateImage(user.id, image, updateUserImage.type);
   }
 
   @Get('/friend-suggestions/:id')
-  async getFriendSuggestions(@Param('id') userId: string) {
-    return this.userService.getFriendSuggestions(userId);
+  async getFriendSuggestions(@Param('id') userId: string, @GetUser() user: TokenPayload) {
+    this.assertSelf(userId, user);
+    return this.userService.getFriendSuggestions(user.id);
   }
 
   @Post('/send-friend-request/:id')
-  async sendFriendRequest(@Param('id') userId: string, @Body() body: AddFriendRequestDto) {
-    return this.userService.sendFriendRequest(userId, body.friendId);
+  async sendFriendRequest(
+    @Param('id') userId: string,
+    @GetUser() user: TokenPayload,
+    @Body() body: AddFriendRequestDto
+  ) {
+    this.assertSelf(userId, user);
+    return this.userService.sendFriendRequest(user.id, body.friendId);
   }
 
   @Post('/accept-friend-request/:id')
-  async acceptFriendRequest(@Param('id') userId: string, @Body() body: AddFriendRequestDto) {
-    return this.userService.acceptFriendRequest(userId, body.friendId);
+  async acceptFriendRequest(
+    @Param('id') userId: string,
+    @GetUser() user: TokenPayload,
+    @Body() body: AddFriendRequestDto
+  ) {
+    this.assertSelf(userId, user);
+    return this.userService.acceptFriendRequest(user.id, body.friendId);
   }
 
   @Post('/decline-friend-request/:id')
-  async declineFriendRequest(@Param('id') userId: string, @Body() body: AddFriendRequestDto) {
-    return this.userService.declineFriendRequest(userId, body.friendId);
+  async declineFriendRequest(
+    @Param('id') userId: string,
+    @GetUser() user: TokenPayload,
+    @Body() body: AddFriendRequestDto
+  ) {
+    this.assertSelf(userId, user);
+    return this.userService.declineFriendRequest(user.id, body.friendId);
+  }
+
+  // The actor is always the authenticated user (JWT). The path `:id` is the
+  // claimed actor/resource owner; reject any request where it does not match
+  // the JWT identity to prevent IDOR (acting as another user via the URL).
+  private assertSelf(targetId: string, user: TokenPayload) {
+    if (targetId !== user.id) {
+      throw new ForbiddenException('You can only perform this action as yourself');
+    }
   }
 }
