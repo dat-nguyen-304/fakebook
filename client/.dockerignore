@@ -1,0 +1,11 @@
+# Excluded from the Docker build context.
+node_modules
+.next
+out
+build
+.env
+.env.*
+.git
+*.log
+Dockerfile
+.dockerignore
