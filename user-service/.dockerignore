@@ -1,0 +1,21 @@
+# Everything here is EXCLUDED from the Docker "build context" — the set of files
+# Docker uploads to the daemon before building. Smaller context = faster builds
+# and no accidental leaking of secrets/local junk into image layers.
+
+# Installed inside the image via `npm ci` — never copy the host's copy (it may be
+# built for macOS/arm and would break argon2's native binary inside Linux).
+node_modules
+
+# Build output — we compile fresh inside the builder stage.
+dist
+
+# Secrets must NEVER bake into an image layer. In k8s these come from Secrets.
+.env
+.env.*
+
+# Local tooling / noise
+.git
+*.log
+coverage
+Dockerfile
+.dockerignore

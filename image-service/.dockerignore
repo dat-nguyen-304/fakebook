@@ -1,0 +1,11 @@
+# Excluded from the Docker build context (see user-service/.dockerignore for the
+# full explanation). Same for every NestJS service in this repo.
+node_modules
+dist
+.env
+.env.*
+.git
+*.log
+coverage
+Dockerfile
+.dockerignore
