@@ -10,7 +10,7 @@ export class KafkaService {
   constructor() {
     this.kafka = new Kafka({
       clientId: 'api-gateway',
-      brokers: ['localhost:9092', 'localhost:9093']
+      brokers: [process.env.KAFKA_BROKER_1 || 'localhost:9092', process.env.KAFKA_BROKER_2 || 'localhost:9093']
     });
     this.producer = this.kafka.producer({
       createPartitioner: Partitioners.LegacyPartitioner
