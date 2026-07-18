@@ -16,6 +16,9 @@ import { RedisService } from '@auth/redis.service';
         name: 'user',
         transport: Transport.GRPC,
         options: {
+          // Where to reach the user-service gRPC server. On k8s this is the
+          // Service DNS name (user-service:5000); default keeps local dev working.
+          url: process.env.USER_SERVICE_GRPC_URL || 'localhost:5000',
           package: USER_PACKAGE_NAME,
           protoPath: join(__dirname, '../../../proto/user.proto')
         }

@@ -9,8 +9,8 @@ export class RedisService {
 
   constructor(private jwt: JwtService) {
     this.client = new Redis({
-      host: 'localhost',
-      port: 6379,
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT, 10) || 6379,
       retryStrategy: times => {
         this.logger.log(`Reconnecting to Redis, attempt ${times}`);
         if (times > 10) throw new Error('Redis connect error');
