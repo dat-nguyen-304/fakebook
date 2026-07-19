@@ -1,0 +1,63 @@
+# ============================================================================
+#  image-service — Kafka consumer (group 'image-upload-group', topic
+#  'image-upload'). Nhận job upload ảnh -> đẩy lên Cloudinary -> ghi URL về
+#  user-service qua gRPC. KHÔNG nhận inbound -> KHÔNG cần Service (giống
+#  notification-service).
+#
+#  Flow 2: browser -> api-gateway (Kafka producer 'image-upload') -> ĐÂY ->
+#  Cloudinary -> gRPC UpdateUserImage -> user-service -> Neo4j + TCP 'image-ready'
+#  -> ws-service -> browser.
+#
+#  ⚠️ Secret Cloudinary (API key/secret) KHÔNG để trong file này — tạo bằng
+#     'kubectl create secret generic cloudinary-secret' (xem lệnh kèm theo).
+# ============================================================================
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: image-service
+  labels:
+    app: image-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: image-service
+  template:
+    metadata:
+      labels:
+        app: image-service
+    spec:
+      containers:
+        - name: image-service
+          image: ghcr.io/dat-nguyen-304/fakebook-image-service:da0ade9
+          imagePullPolicy: IfNotPresent   # dùng image đã 'kind load'
+          env:
+            # Kafka seed brokers -> Service 'kafka' (1 broker nên 2 biến trỏ chung).
+            - { name: KAFKA_BROKER_1, value: "kafka:9092" }
+            - { name: KAFKA_BROKER_2, value: "kafka:9092" }
+            # 1 broker -> tạo topic 'image-upload' phải RF=1 (code cũ default 2 -> lỗi).
+            - { name: KAFKA_REPLICATION_FACTOR, value: "1" }
+            # gRPC tới user-service (ghi URL ảnh về). Tên Service + cổng gRPC.
+            - { name: USER_SERVICE_GRPC_URL, value: "user-service:5000" }
+            # Cloudinary: 2 giá trị KHÔNG nhạy cảm để inline; key/secret lấy từ Secret.
+            - { name: CLOUDINARY_CLOUD_NAME, value: "fakebook-2025" }
+            - { name: CLOUDINARY_HOST, value: "https://res.cloudinary.com/fakebook-2025/image/upload/" }
+            - name: CLOUDINARY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: cloudinary-secret
+                  key: CLOUDINARY_API_KEY
+            - name: CLOUDINARY_API_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: cloudinary-secret
+                  key: CLOUDINARY_API_SECRET
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
