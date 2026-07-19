@@ -38,7 +38,7 @@ spec:
       enableServiceLinks: false
       containers:
         - name: api-gateway
-          image: ghcr.io/dat-nguyen-304/fakebook-api-gateway:dd603b2
+          image: ghcr.io/dat-nguyen-304/fakebook-api-gateway:0bf0188
           imagePullPolicy: IfNotPresent
           ports:
             - { containerPort: 3000, name: http }
@@ -63,6 +63,19 @@ spec:
             limits:
               cpu: "500m"
               memory: "384Mi"
+          # Liveness: shallow — 200 while the HTTP server runs (no dep check).
+          livenessProbe:
+            httpGet: { path: /api/health/live, port: 3000 }
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            failureThreshold: 3
+          # Readiness: 200 only when Redis is connected -> pulled from the Service
+          # when Redis is unreachable, without a pointless restart.
+          readinessProbe:
+            httpGet: { path: /api/health/ready, port: 3000 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
 
 ---
 apiVersion: v1

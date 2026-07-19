@@ -27,6 +27,7 @@ import { RedisService } from '@auth/redis.service';
     JwtModule.register({})
   ],
   providers: [AuthService, JwtStrategy, TokenService, RedisService],
-  controllers: [AuthController]
+  controllers: [AuthController],
+  exports: [RedisService]
 })
 export class AuthModule {}
