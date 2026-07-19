@@ -7,6 +7,7 @@ import * as argon from 'argon2';
 import formattedResponse from './response.format';
 import { ClientKafka, ClientProxy } from '@nestjs/microservices';
 import { CreateUserEvent, FriendAcceptEvent, FriendRequestEvent, UpdateUserEvent } from './notification.event';
+import { HealthService } from '../health/health.service';
 
 @Injectable()
 export class UserService implements OnModuleInit {
@@ -15,7 +16,8 @@ export class UserService implements OnModuleInit {
   constructor(
     private readonly configService: ConfigService,
     @Inject('WS_SERVICE') private readonly wsClient: ClientProxy,
-    @Inject('NOTIFICATION_SERVICE') private readonly notificationClient: ClientKafka
+    @Inject('NOTIFICATION_SERVICE') private readonly notificationClient: ClientKafka,
+    private readonly healthService: HealthService
   ) {
     this.driver = neo4j.driver(
       this.configService.get('NEO4J_HOST'),
@@ -23,15 +25,37 @@ export class UserService implements OnModuleInit {
     );
   }
 
-  async onModuleInit() {
-    const session = this.driver.session();
-    try {
-      await session.run('CREATE CONSTRAINT user_username_unique IF NOT EXISTS FOR (u:USER) REQUIRE u.username IS UNIQUE');
-      await session.run('CREATE INDEX user_id_index IF NOT EXISTS FOR (u:USER) ON (u.id)');
-    } catch (error) {
-      console.error('Failed to initialize Neo4j schema:', error);
-    } finally {
-      await session.close();
+  onModuleInit() {
+    // Fire-and-forget so module init / the gRPC server don't block on Neo4j
+    // being reachable at boot. Readiness stays false (probe fails, no traffic
+    // routed) until the schema is in place. Fixes FAK-22, which swallowed the
+    // first failure and reported healthy with no constraints created.
+    this.initSchemaWithRetry();
+  }
+
+  /** Create constraints/indexes, retrying with capped exponential backoff until
+   *  Neo4j is reachable, then flip the service to ready. */
+  private async initSchemaWithRetry() {
+    const MAX_DELAY_MS = 30_000;
+    let attempt = 0;
+    // Loop until success — liveness keeps the pod alive in the meantime, and
+    // readiness gates traffic, so retrying forever (with a delay cap) is safe.
+    while (true) {
+      const session = this.driver.session();
+      try {
+        await session.run('CREATE CONSTRAINT user_username_unique IF NOT EXISTS FOR (u:USER) REQUIRE u.username IS UNIQUE');
+        await session.run('CREATE INDEX user_id_index IF NOT EXISTS FOR (u:USER) ON (u.id)');
+        this.healthService.markReady();
+        console.log('Neo4j schema initialized; user-service is ready.');
+        return;
+      } catch (error) {
+        attempt++;
+        console.error(`Failed to initialize Neo4j schema (attempt ${attempt}):`, error?.message ?? error);
+      } finally {
+        await session.close();
+      }
+      const delay = Math.min(1000 * 2 ** (attempt - 1), MAX_DELAY_MS);
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
 
