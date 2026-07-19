@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Kafka } from 'kafkajs';
 
 @Injectable()
@@ -6,12 +7,19 @@ export class KafkaAdminService {
   private readonly logger = new Logger(KafkaAdminService.name);
   private kafka: Kafka;
   private readonly DEFAULT_NUM_PARTITIONS = 3;
-  private readonly DEFAULT_REPLICATION_FACTOR = 2;
+  // Replication factor is env-driven: prod may want 2+, but a single-broker
+  // cluster (e.g. the kind learning setup) can only do 1 — RF > brokers makes
+  // createTopics fail and crashes the service at boot. Default 1.
+  private readonly DEFAULT_REPLICATION_FACTOR: number;
 
-  constructor() {
+  constructor(private readonly config: ConfigService) {
+    this.DEFAULT_REPLICATION_FACTOR = Number(config.get('KAFKA_REPLICATION_FACTOR') ?? 1);
     this.kafka = new Kafka({
       clientId: 'image-service-admin',
-      brokers: ['localhost:9092', 'localhost:9093']
+      brokers: [
+        config.get('KAFKA_BROKER_1') || 'localhost:9092',
+        config.get('KAFKA_BROKER_2') || 'localhost:9093'
+      ]
     });
   }
 
