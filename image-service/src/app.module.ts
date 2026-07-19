@@ -16,6 +16,10 @@ import { ImageService } from '@image/image.service';
         name: 'user',
         transport: Transport.GRPC,
         options: {
+          // Service DNS name (user-service:5000) on k8s; default keeps local dev
+          // working. Without a url the gRPC client dials localhost:5000, which is
+          // unreachable from another pod.
+          url: process.env.USER_SERVICE_GRPC_URL || 'localhost:5000',
           package: USER_PACKAGE_NAME,
           protoPath: join(__dirname, '../../proto/user.proto')
         }
