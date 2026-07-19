@@ -38,6 +38,12 @@ export class RedisService {
     });
   }
 
+  /** True once the ioredis client has an open, ready connection. Used by the
+   *  readiness probe so k8s stops routing traffic here when Redis is unreachable. */
+  isReady(): boolean {
+    return this.client.status === 'ready';
+  }
+
   private generateTokenKey(userId: string, token: string, tokenType: 'access' | 'refresh'): string {
     return `${userId}:${tokenType}Token:${token}`;
   }
