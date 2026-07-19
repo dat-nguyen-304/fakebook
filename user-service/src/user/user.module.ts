@@ -3,8 +3,10 @@ import { UserService } from '@user/user.service';
 import { UserController } from '@user/user.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { HealthModule } from '../health/health.module';
 @Module({
   imports: [
+    HealthModule,
     ClientsModule.registerAsync([
       {
         name: 'WS_SERVICE',

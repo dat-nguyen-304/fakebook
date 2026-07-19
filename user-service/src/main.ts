@@ -4,7 +4,12 @@ import { AppModule } from '@src/app.module';
 import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
+  // Hybrid app: an HTTP server (for k8s liveness/readiness probes) alongside the
+  // gRPC microservice (the actual API). Previously gRPC-only via
+  // createMicroservice, which left no HTTP surface for probes.
+  const app = await NestFactory.create(AppModule);
+
+  app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,
     options: {
       // Bind gRPC to all interfaces so other pods can reach it on k8s.
@@ -14,6 +19,10 @@ async function bootstrap() {
       protoPath: join(__dirname, '../../proto/user.proto')
     }
   });
-  await app.listen();
+
+  await app.startAllMicroservices();
+  // HTTP is served only for /health/live and /health/ready. Bind 0.0.0.0 so
+  // kubelet can reach it on the pod IP.
+  await app.listen(process.env.HEALTH_PORT || 5001, '0.0.0.0');
 }
 bootstrap();

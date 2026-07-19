@@ -48,10 +48,11 @@ spec:
       enableServiceLinks: false
       containers:
         - name: user-service
-          image: ghcr.io/dat-nguyen-304/fakebook-user-service:dd603b2
+          image: ghcr.io/dat-nguyen-304/fakebook-user-service:8eaeb89
           imagePullPolicy: IfNotPresent   # image nạp local qua 'kind load'
           ports:
             - { containerPort: 5000, name: grpc }
+            - { containerPort: 5001, name: health }   # HTTP port for k8s probes
           # envFrom: nạp TẤT CẢ key trong ConfigMap thành biến môi trường.
           envFrom:
             - configMapRef:
@@ -75,6 +76,22 @@ spec:
             limits:
               cpu: "500m"
               memory: "384Mi"
+          # Liveness: shallow — only asks "is the process alive" (always 200).
+          # Never checks Neo4j, or a DB outage would restart-loop the pod
+          # (a restart can't bring the database back).
+          livenessProbe:
+            httpGet: { path: /health/live, port: 5001 }
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            failureThreshold: 3
+          # Readiness: 200 only once the Neo4j schema is created, so k8s keeps the
+          # pod OUT of the Service endpoints (no gRPC routed in) until it can
+          # actually serve. This is the FAK-22 fix: no more "alive but no schema".
+          readinessProbe:
+            httpGet: { path: /health/ready, port: 5001 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
 
 ---
 # ─────────────── Service ───────────────
