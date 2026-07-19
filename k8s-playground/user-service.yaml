@@ -1,0 +1,92 @@
+# ============================================================================
+#  user-service — gRPC server, nối Neo4j. Service backend Fakebook đầu tiên.
+#  Gồm 3 phần: ConfigMap (config thường) + Deployment + Service.
+#  Mật khẩu Neo4j KHÔNG ở đây — lấy từ Secret 'neo4j-auth' (tạo bằng lệnh).
+# ============================================================================
+
+---
+# ─────────────── ConfigMap: cấu hình KHÔNG nhạy cảm ───────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-service-config
+data:
+  # Tên host = tên Service trong cluster. 'neo4j' là Service Neo4j mình đã dựng.
+  NEO4J_HOST: "bolt://neo4j:7687"
+  # Mấy service dưới CHƯA deploy — điền sẵn tên tương lai. emit tới chúng sẽ
+  # fail (lazy) cho tới khi mình dựng, nhưng không chặn user-service khởi động.
+  WS_SERVICE_HOST: "ws-service"
+  WS_SERVICE_PORT: "3002"
+  # 1 broker duy nhất, Service tên 'kafka'. (Trước để 'kafka-1/kafka-2' — host
+  # không tồn tại -> notification-client emit fail, replica/notification rỗng.)
+  KAFKA_BROKER_1: "kafka:9092"
+  KAFKA_BROKER_2: "kafka:9092"
+  DEFAULT_AVATAR_URL: "v1726390107/avatar_x34kum.webp"
+  DEFAULT_COVER_URL: "v1726390227/background_va9zwd.jpg"
+
+---
+# ─────────────── Deployment ───────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  labels:
+    app: user-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      # Tắt service-links (giống fix Neo4j). Lý do ở đây: nếu bật, k8s tiêm
+      # WS_SERVICE_PORT=tcp://... khi Service ws-service tồn tại, ĐÈ lên giá trị
+      # ConfigMap. Tắt đi cho sạch, tránh env cổ gây rối.
+      enableServiceLinks: false
+      containers:
+        - name: user-service
+          image: ghcr.io/dat-nguyen-304/fakebook-user-service:dd603b2
+          imagePullPolicy: IfNotPresent   # image nạp local qua 'kind load'
+          ports:
+            - { containerPort: 5000, name: grpc }
+          # envFrom: nạp TẤT CẢ key trong ConfigMap thành biến môi trường.
+          envFrom:
+            - configMapRef:
+                name: user-service-config
+          # env: 2 biến nhạy cảm lấy riêng từ Secret.
+          env:
+            - name: NEO4J_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: neo4j-auth
+                  key: NEO4J_USERNAME
+            - name: NEO4J_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: neo4j-auth
+                  key: NEO4J_PASSWORD
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "384Mi"
+
+---
+# ─────────────── Service ───────────────
+# Tạo sẵn để api-gateway gọi 'user-service:5000' qua DNS ở bước sau.
+# (Lưu ý: gRPC hiện bind localhost trong Pod — sẽ sửa ở bước api-gateway.)
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+spec:
+  type: ClusterIP
+  selector:
+    app: user-service
+  ports:
+    - { name: grpc, port: 5000, targetPort: 5000 }

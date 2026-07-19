@@ -1,0 +1,74 @@
+# ============================================================================
+#  Kafka — 1 broker KRaft (không Zookeeper). Rút gọn từ docker-compose (2 broker
+#  -> 1 cho nhẹ máy Mac; replication factor = 1). Producer api-gateway gửi topic
+#  'image-upload'; consumer image-service/notification-service sẽ nối sau.
+#
+#  Client trong cluster nối 'kafka:9092' (KAFKA_BROKER_1/2 trỏ vào đây).
+# ============================================================================
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka
+  labels:
+    app: kafka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      # ⚠️ Tắt service-links (bài học Neo4j lần 3!). Service tên 'kafka' -> k8s
+      # tiêm KAFKA_PORT_9092_TCP_PORT... mà entrypoint cp-kafka coi mọi KAFKA_*
+      # là dòng cấu hình -> sinh property rác, hỏng broker. Tắt cho sạch.
+      enableServiceLinks: false
+      containers:
+        - name: kafka
+          image: confluentinc/cp-kafka:7.7.1
+          ports:
+            - { containerPort: 9092, name: broker }
+          env:
+            # --- Danh tính KRaft ---
+            - { name: CLUSTER_ID,            value: "MkU3OEVBNTcwNTJENDM2Qk" }  # tái dùng từ compose
+            - { name: KAFKA_NODE_ID,         value: "1" }
+            - { name: KAFKA_PROCESS_ROLES,   value: "broker,controller" }        # 1 node kiêm cả 2 vai
+            - { name: KAFKA_CONTROLLER_QUORUM_VOTERS, value: "1@localhost:29093" } # 1 node -> tự bầu qua localhost
+            # --- Listeners ---
+            - { name: KAFKA_LISTENERS,       value: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093" }
+            # Địa chỉ broker "quảng cáo" cho client -> phải là tên Service để pod khác nối được:
+            - { name: KAFKA_ADVERTISED_LISTENERS, value: "PLAINTEXT://kafka:9092" }
+            - { name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP, value: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT" }
+            - { name: KAFKA_CONTROLLER_LISTENER_NAMES, value: "CONTROLLER" }
+            - { name: KAFKA_INTER_BROKER_LISTENER_NAME, value: "PLAINTEXT" }
+            # --- 1 broker nên mọi replication factor = 1 (mặc định 3 sẽ lỗi) ---
+            - { name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR,     value: "1" }
+            - { name: KAFKA_DEFAULT_REPLICATION_FACTOR,           value: "1" }
+            - { name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR, value: "1" }
+            - { name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR,        value: "1" }
+            - { name: KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS,     value: "0" }
+            # --- Ghìm heap cho nhẹ máy 16GB ---
+            - { name: KAFKA_HEAP_OPTS,       value: "-Xmx512m -Xms256m" }
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "1500m"
+              memory: "1Gi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka                    # DNS: client nối 'kafka:9092'
+spec:
+  type: ClusterIP
+  selector:
+    app: kafka
+  ports:
+    - { port: 9092, targetPort: 9092 }

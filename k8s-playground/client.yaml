@@ -1,0 +1,56 @@
+# ============================================================================
+#  Service Fakebook THẬT đầu tiên trên k8s: client (Next.js).
+#  Cùng cấu trúc như hello-nginx — chỉ đổi image + cổng cho khớp Dockerfile.
+# ============================================================================
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client
+  labels:
+    app: client
+spec:
+  replicas: 1                    # frontend, tạm 1 bản là đủ để xem
+  selector:
+    matchLabels:
+      app: client
+  template:
+    metadata:
+      labels:
+        app: client
+    spec:
+      containers:
+        - name: client
+          image: ghcr.io/dat-nguyen-304/fakebook-client:d6738f8
+          # Tag = commit SHA (immutable, best-practice). 'ghcr.io/...' là đường
+          # dẫn registry thật để sau này push lên; giờ mình nạp thẳng vào cluster
+          # bằng 'kind load' nên chưa cần push.
+          # ⚠️ IfNotPresent = "có sẵn trong node thì dùng, đừng đi tải từ mạng".
+          # Bắt buộc phải có, vì image này chỉ nạp local, chưa nằm trên ghcr.io —
+          # nếu để 'Always' thì Pod sẽ lỗi ImagePullBackOff vì tìm trên mạng không thấy.
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3005   # khớp ENV PORT=3005 trong Dockerfile
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-svc
+spec:
+  type: ClusterIP
+  selector:
+    app: client                 # trỏ tới Pod có nhãn app=client
+  ports:
+    - port: 80                  # Service nghe cổng 80 (chuẩn web)...
+      targetPort: 3005          # ...rồi chuyển tiếp vào cổng 3005 của Pod.
+      # Để ý: cổng Service (80) KHÁC cổng container (3005) — hoàn toàn hợp lệ.
+      # Đây là lý do có 'targetPort': ánh xạ cổng-ngoài -> cổng-trong.

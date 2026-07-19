@@ -1,0 +1,77 @@
+# ============================================================================
+#  api-gateway — cửa ngõ HTTP (:3000, prefix /api). Nối user-service (gRPC),
+#  Redis (session), Kafka (image-upload). Tất cả địa chỉ giờ đọc từ env
+#  (nhờ FAK-23). JWT secret lấy từ Secret 'api-gateway-secret' (tạo bằng lệnh).
+# ============================================================================
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-gateway-config
+data:
+  USER_SERVICE_GRPC_URL: "user-service:5000"   # DNS Service user-service
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  KAFKA_BROKER_1: "kafka:9092"                  # 1 broker -> cả 2 trỏ cùng chỗ
+  KAFKA_BROKER_2: "kafka:9092"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  labels:
+    app: api-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      # Tắt service-links: Service 'redis' tiêm REDIS_PORT=tcp://... sẽ ĐÈ lên
+      # REDIS_PORT=6379 trong ConfigMap. Tắt để tránh xung đột env cổ.
+      enableServiceLinks: false
+      containers:
+        - name: api-gateway
+          image: ghcr.io/dat-nguyen-304/fakebook-api-gateway:dd603b2
+          imagePullPolicy: IfNotPresent
+          ports:
+            - { containerPort: 3000, name: http }
+          envFrom:
+            - configMapRef:
+                name: api-gateway-config
+          env:
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: api-gateway-secret
+                  key: JWT_SECRET
+            - name: JWT_REFRESH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: api-gateway-secret
+                  key: JWT_REFRESH_SECRET
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "384Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+spec:
+  type: ClusterIP
+  selector:
+    app: api-gateway
+  ports:
+    - { name: http, port: 3000, targetPort: 3000 }

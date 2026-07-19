@@ -1,0 +1,46 @@
+# ============================================================================
+#  Redis — lưu session/token cho api-gateway (auth). Dịch từ docker-compose.
+#  Nhẹ, không mật khẩu (giống compose). api-gateway nối qua REDIS_HOST=redis.
+# ============================================================================
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine          # image công khai -> k8s tự pull
+          ports:
+            - { containerPort: 6379, name: redis }
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "32Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis                            # DNS: api-gateway nối 'redis:6379'
+spec:
+  type: ClusterIP
+  selector:
+    app: redis
+  ports:
+    - { port: 6379, targetPort: 6379 }

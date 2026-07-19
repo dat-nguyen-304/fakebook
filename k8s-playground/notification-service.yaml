@@ -1,0 +1,53 @@
+# ============================================================================
+#  notification-service — Kafka consumer (group 'notification-consumer'). Nghe
+#  'create-notification' từ user-service, lưu Mongo, enrich tên/avatar từ user
+#  replica, rồi bắn TCP tới ws-service để đẩy real-time.
+#
+#  ⚠️ KHÔNG có Service: service này KHÔNG nhận inbound connection nào (chỉ
+#  consume Kafka + tự nối ra Mongo/ws). Không ai "gọi vào" nó -> không cần
+#  Service/DNS. (api-gateway hiện cũng chưa gọi 'get-notifications'.)
+#
+#  ⚠️ enableServiceLinks:false — BÀI HỌC COLLISION lại lần nữa: Service tên
+#  'ws-service' khiến k8s tiêm biến 'WS_SERVICE_PORT=tcp://<ip>:3002' vào MỌI
+#  pod. Mà code ở đây ĐỌC 'WS_SERVICE_PORT' và mong nó là '3002'. Dù env khai
+#  tường minh bên dưới sẽ đè, cứ tắt service-links cho sạch, khỏi rủi ro.
+# ============================================================================
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  labels:
+    app: notification-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: notification-service
+          image: ghcr.io/dat-nguyen-304/fakebook-notification-service:83e4d3d
+          imagePullPolicy: IfNotPresent   # dùng image đã 'kind load'
+          env:
+            # Mongo chạy in-cluster (StatefulSet mongo). Không auth -> URI gọn.
+            - { name: MONGODB_URI,     value: "mongodb://mongo:27017/notification" }
+            # TCP tới ws-service (đọc bởi ClientsModule 'WS_SERVICE'):
+            - { name: WS_SERVICE_HOST, value: "ws-service" }
+            - { name: WS_SERVICE_PORT, value: "3002" }
+            # Kafka seed brokers -> Service 'kafka'. 1 broker nên 2 biến trỏ chung.
+            - { name: KAFKA_BROKER_1,  value: "kafka:9092" }
+            - { name: KAFKA_BROKER_2,  value: "kafka:9092" }
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
