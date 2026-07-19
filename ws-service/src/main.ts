@@ -8,8 +8,11 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.TCP,
     options: {
-      host: 'localhost',
-      port: 3002
+      // Bind TCP to all interfaces so other pods (notification-service,
+      // user-service) can reach it on k8s. NestJS default (localhost:3002)
+      // only accepted same-host connections.
+      host: process.env.WS_TCP_HOST || '0.0.0.0',
+      port: parseInt(process.env.WS_TCP_PORT || '3002', 10)
     }
   });
 

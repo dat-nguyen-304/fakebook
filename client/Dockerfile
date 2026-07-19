@@ -24,8 +24,12 @@ COPY . .
 # `next build`. Passed in via --build-arg; changing them later means rebuilding.
 ARG NEXT_PUBLIC_BACKEND_BASE_URL=http://localhost:3000/api
 ARG NEXT_PUBLIC_IMAGE_HOST=https://res.cloudinary.com/fakebook-2025
+# Socket.IO origin — baked at build like the others. Default = direct ws-service
+# port for local dev; behind Ingress, override with the Ingress origin.
+ARG NEXT_PUBLIC_SOCKET_URL=http://localhost:4000
 ENV NEXT_PUBLIC_BACKEND_BASE_URL=$NEXT_PUBLIC_BACKEND_BASE_URL
 ENV NEXT_PUBLIC_IMAGE_HOST=$NEXT_PUBLIC_IMAGE_HOST
+ENV NEXT_PUBLIC_SOCKET_URL=$NEXT_PUBLIC_SOCKET_URL
 
 RUN npm run build
 
