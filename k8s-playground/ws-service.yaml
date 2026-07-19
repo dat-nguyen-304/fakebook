@@ -1,0 +1,65 @@
+# ============================================================================
+#  ws-service — fan-out real-time tới browser (Socket.IO). Stateless: room
+#  membership nằm trong RAM của pod -> dùng Deployment (không cần danh tính).
+#
+#  3 cổng (xem Dockerfile EXPOSE 3001 3002 4000):
+#   - 3001 HTTP: Nest app.listen, KHÔNG có route -> bỏ qua, không expose.
+#   - 3002 TCP microservice: nơi notification-service (pod KHÁC) gửi event
+#     'create-notification' vào. ⭐ Chính vì cổng này mà mình vừa sửa code bind
+#     '0.0.0.0' thay 'localhost' (commit 83e4d3d) — localhost thì pod khác
+#     không gõ vào được.
+#   - 4000 Socket.IO: browser nối 'localhost:4000/notification' (qua
+#     port-forward) để nhận 'new-notification'. CORS trong code cho phép đúng
+#     origin 'http://localhost:3005' (đúng cổng client đang port-forward).
+#
+#  KHÔNG cần enableServiceLinks:false: ws-service không đọc biến env nào trùng
+#  với các biến <SVC>_PORT... mà k8s tự tiêm (bài học collision chỉ xảy ra khi
+#  chương trình VÔ TÌNH đọc trúng biến đó — neo4j/kafka/api-gateway trước đây).
+# ============================================================================
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ws-service
+  labels:
+    app: ws-service
+spec:
+  replicas: 1                     # Socket.IO nhiều replica cần sticky session
+                                  # (Phase 4). Giờ để 1 cho đơn giản.
+  selector:
+    matchLabels:
+      app: ws-service
+  template:
+    metadata:
+      labels:
+        app: ws-service
+    spec:
+      containers:
+        - name: ws-service
+          image: ghcr.io/dat-nguyen-304/fakebook-ws-service:83e4d3d
+          imagePullPolicy: IfNotPresent   # dùng image đã 'kind load', không pull ghcr
+          ports:
+            - { containerPort: 3002, name: tcp }
+            - { containerPort: 4000, name: socketio }
+          # Không cần env: code default WS_TCP_HOST=0.0.0.0, WS_TCP_PORT=3002.
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ws-service                # DNS: notification-service nối 'ws-service:3002'
+spec:
+  type: ClusterIP
+  selector:
+    app: ws-service
+  ports:
+    - { name: tcp,      port: 3002, targetPort: 3002 }   # notification -> ws
+    - { name: socketio, port: 4000, targetPort: 4000 }   # browser (port-forward)

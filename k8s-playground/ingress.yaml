@@ -1,0 +1,51 @@
+# ============================================================================
+#  Ingress resource — BẢNG LUẬT ĐỊNH TUYẾN cho controller ingress-nginx đọc.
+#  Nhớ: resource này là "tờ luật"; phải có controller (cài riêng) mới chạy.
+#
+#  Browser gõ http://localhost:3005 -> node:80 -> ingress-nginx -> match path:
+#     /api        -> api-gateway:3000  (gateway có prefix /api, KHÔNG strip path)
+#     /socket.io  -> ws-service:4000   (Socket.IO transport + nâng cấp WebSocket)
+#     /           -> client-svc:80     (Next.js UI + _next static)
+#
+#  Tất cả CHUNG origin 'localhost:3005' -> hết CORS, hết 3 port-forward.
+# ============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fakebook
+  annotations:
+    # ingress-nginx tự hỗ trợ WebSocket khi thấy header Upgrade, nhưng cho chắc
+    # ta nới timeout để kết nối Socket.IO không bị cắt giữa chừng.
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+spec:
+  ingressClassName: nginx          # trỏ tới controller ingress-nginx vừa cài
+  rules:
+    - http:                        # KHÔNG đặt 'host' -> khớp mọi host (localhost)
+        paths:
+          # Cụ thể để TRƯỚC: nginx match theo prefix DÀI NHẤT, nên /api và
+          # /socket.io thắng /.
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway
+                port:
+                  number: 3000
+          # pathType ImplementationSpecific: ingress-nginx CHẶN dấu '.' với
+          # Prefix/Exact (bảo mật). '/socket.io' có '.' nên phải để loại này —
+          # nginx tự match kiểu prefix, bỏ qua bộ validate ký tự.
+          - path: /socket.io
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: ws-service
+                port:
+                  number: 4000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: client-svc
+                port:
+                  number: 80

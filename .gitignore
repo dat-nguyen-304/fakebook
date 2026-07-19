@@ -31,3 +31,6 @@
 # typescript
 *.tsbuildinfo
 /client/next-env.d.ts
+
+# k8s learning runbooks (local only)
+/k8s-playground/runbooks/

@@ -1,0 +1,53 @@
+# ============================================================================
+#  DEMO HỌC K8S — nginx. File này thay cho 2 lệnh imperative đã gõ tay:
+#     kubectl create deployment hello-nginx --image=nginx:alpine --replicas=2
+#     kubectl expose deployment hello-nginx --port=80 --name=hello-svc
+#  Một file YAML có thể chứa NHIỀU tài nguyên, ngăn nhau bằng dấu '---'.
+# ============================================================================
+
+---
+# ─────────────────────────── TÀI NGUYÊN 1: DEPLOYMENT ───────────────────────
+apiVersion: apps/v1        # phiên bản API cho loại Deployment (nhóm 'apps')
+kind: Deployment           # loại tài nguyên: Deployment
+metadata:
+  name: hello-nginx        # tên của Deployment
+  labels:
+    app: hello-nginx       # nhãn gắn lên chính Deployment
+spec:                      # 'spec' = trạng thái MONG MUỐN của mày
+  replicas: 2              # muốn LUÔN có 2 Pod chạy
+
+  selector:                # Deployment quản Pod nào? -> Pod có nhãn khớp đây
+    matchLabels:
+      app: hello-nginx
+
+  template:                # KHUÔN để đẻ ra mỗi Pod (đây là 'định nghĩa 1 Pod')
+    metadata:
+      labels:
+        app: hello-nginx   # ⚠️ nhãn này PHẢI khớp selector.matchLabels ở trên
+    spec:
+      containers:          # danh sách container trong 1 Pod (ở đây chỉ 1)
+        - name: nginx
+          image: nginx:alpine    # image chạy
+          ports:
+            - containerPort: 80   # container lắng nghe cổng 80 (chỉ để ghi chú)
+          resources:              # giới hạn tài nguyên (best-practice, nên có)
+            requests:             # mức TỐI THIỂU cần để được xếp lên node
+              cpu: "10m"          # 10 milli-CPU = 0.01 core
+              memory: "16Mi"
+            limits:               # mức TRẦN, vượt là bị bóp/kill
+              cpu: "50m"
+              memory: "64Mi"
+
+---
+# ─────────────────────────── TÀI NGUYÊN 2: SERVICE ──────────────────────────
+apiVersion: v1             # Service thuộc API core -> chỉ 'v1'
+kind: Service
+metadata:
+  name: hello-svc          # tên Service = tên DNS gọi trong cluster
+spec:
+  type: ClusterIP          # chỉ truy cập trong cluster (mặc định)
+  selector:                # Service gửi traffic tới Pod có nhãn khớp đây
+    app: hello-nginx       # -> khớp Pod của Deployment trên
+  ports:
+    - port: 80             # cổng của Service (client gọi vào)
+      targetPort: 80       # cổng trên Pod để chuyển tiếp tới

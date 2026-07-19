@@ -1,0 +1,88 @@
+# ============================================================================
+#  MongoDB — store cho notification-service (lưu Notification docs + user
+#  replica). Trong dev thật service này trỏ MongoDB Atlas (cloud), nhưng để
+#  học k8s mình chạy Mongo NGAY TRONG cluster -> URI = mongodb://mongo:27017.
+#
+#  ⭐ ĐÂY LÀ STATEFULSET ĐẦU TIÊN. Khác Deployment ở đâu, đọc kỹ:
+#
+#  - Deployment: các Pod là "gia súc" (cattle) — vô danh, thay thế được, tên
+#    ngẫu nhiên (neo4j-7d9f-abcde). Chết cái nào đẻ cái mới, KHÔNG cần nhớ
+#    danh tính. Hợp cho service stateless (api-gateway, ws-service...).
+#
+#  - StatefulSet: các Pod là "thú cưng" (pets) — có DANH TÍNH ỔN ĐỊNH:
+#      * Tên cố định, đánh số: mongo-0, mongo-1, mongo-2 (không random).
+#      * DNS riêng từng pod: mongo-0.mongo.<ns>.svc... (nhờ headless Service).
+#      * Mỗi pod GẮN CỨNG với ổ đĩa riêng (PVC): mongo-0 luôn nhận lại đúng
+#        ổ của nó dù pod bị xoá/đẻ lại -> DỮ LIỆU KHÔNG MẤT.
+#    -> Đúng cho database: 1 DB cần đúng ổ đĩa + danh tính của nó.
+#
+#  - `volumeClaimTemplates`: "khuôn" tạo PVC. StatefulSet tự đẻ 1 PVC cho MỖI
+#    pod (data-mongo-0). PVC = "đơn xin 1 ổ đĩa". kind có sẵn StorageClass
+#    'standard' (local-path-provisioner) -> tự cấp ổ trên đĩa máy thật. Xoá
+#    pod -> ổ VẪN CÒN; xoá StatefulSet -> PVC vẫn còn (phải xoá tay), nên data
+#    bền hơn hẳn Deployment (neo4j/kafka của mình hiện xoá pod là mất sạch).
+#
+#  - `serviceName: mongo` + Service `clusterIP: None` (HEADLESS): headless =
+#    Service không có IP ảo/không load-balance, chỉ trả thẳng IP các pod qua
+#    DNS. StatefulSet BẮT BUỘC cần 1 headless service để cấp DNS ổn định cho
+#    từng pod. Với 1 replica, client cứ nối 'mongo:27017' là tới mongo-0.
+# ============================================================================
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo
+  labels:
+    app: mongo
+spec:
+  clusterIP: None                 # <- HEADLESS: bắt buộc cho StatefulSet
+  selector:
+    app: mongo
+  ports:
+    - { port: 27017, targetPort: 27017, name: mongo }
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongo
+  labels:
+    app: mongo
+spec:
+  serviceName: mongo              # trỏ tới headless Service ở trên
+  replicas: 1                     # 1 node; HA/replica-set để Phase sau
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:7          # image công khai Docker Hub -> k8s tự pull
+          ports:
+            - { containerPort: 27017, name: mongo }
+          # Không đặt user/password cho gọn (giống Mongo local không auth).
+          # Sản xuất thật thì bọc bằng Secret giống neo4j-auth đã học.
+          volumeMounts:
+            - name: data          # khớp tên PVC template bên dưới
+              mountPath: /data/db # thư mục Mongo ghi dữ liệu
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+  # Khuôn PVC: StatefulSet đẻ ra PVC tên 'data-mongo-0' gắn cứng vào mongo-0.
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]   # 1 node ghi tại 1 thời điểm
+        resources:
+          requests:
+            storage: 1Gi                 # xin 1Gi từ StorageClass mặc định

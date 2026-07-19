@@ -1,0 +1,82 @@
+# ============================================================================
+#  Neo4j — database cho user-service. Dịch từ docker-compose.yml (service neo4j).
+#
+#  KHÁC BIỆT so với compose, đọc kỹ:
+#   - compose 'image: neo4j:5'  -> ở đây PIN version 'neo4j:5.26' (immutable hơn,
+#     đúng bài học tag bất biến vừa học). Nếu pull lỗi thì đổi lại 'neo4j:5'.
+#   - compose có 'volumes: neo4j_data' để lưu bền -> ở đây TẠM BỎ. Dữ liệu nằm
+#     trong Pod, Pod chết là MẤT. Cách đúng của k8s là PersistentVolumeClaim +
+#     StatefulSet, nhưng đó là Phase 3. Giờ học nên chấp nhận ephemeral.
+#   - Neo4j nên là StatefulSet (DB cần danh tính + ổ đĩa ổn định), nhưng tạm
+#     dùng Deployment cho đơn giản; sẽ nâng cấp ở Phase 3.
+#   - mật khẩu để INLINE ở đây cho chạy trước -> ngay bước SAU mình sẽ chuyển
+#     nó vào Secret (Phase 2). Đây là "cách chưa chuẩn" cố ý, để thấy vì sao
+#     cần Secret.
+# ============================================================================
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: neo4j
+  labels:
+    app: neo4j
+spec:
+  replicas: 1                 # DB không scale kiểu này; 1 bản (Phase 3 bàn HA)
+  selector:
+    matchLabels:
+      app: neo4j
+  template:
+    metadata:
+      labels:
+        app: neo4j
+    spec:
+      # ⚠️ FIX BẮT BUỘC cho Neo4j: tắt "service links".
+      # k8s mặc định tiêm env <SVC>_PORT_..._TCP_... vào Pod. Vì Service tên
+      # 'neo4j', các biến đó có tiền tố NEO4J_, mà image Neo4j lại coi mọi
+      # NEO4J_* là dòng config -> nó vấp 'Unrecognized setting PORT.7687.TCP.PORT'
+      # và không chịu khởi động. false = không tiêm mấy env cổ đó nữa. Pod vẫn
+      # tìm Service khác qua DNS bình thường, không mất gì.
+      enableServiceLinks: false
+      containers:
+        - name: neo4j
+          image: neo4j:5.26   # image CÔNG KHAI trên Docker Hub -> k8s tự pull
+          # KHÔNG cần imagePullPolicy đặc biệt: tag không phải :latest nên mặc
+          # định IfNotPresent; và image này CÓ trên registry nên pull được thật.
+          ports:
+            - { containerPort: 7687, name: bolt }    # user-service nối vào đây
+            - { containerPort: 7474, name: browser }  # web UI cho mình xem
+          env:
+            # Mật khẩu KHÔNG còn nằm trong file này nữa. Nó được lấy từ Secret
+            # tên 'neo4j-auth' (tạo bằng lệnh 'kubectl create secret', không
+            # commit vào repo). secretKeyRef = "lấy value từ key trong Secret".
+            - name: NEO4J_AUTH
+              valueFrom:
+                secretKeyRef:
+                  name: neo4j-auth      # tên Secret
+                  key: NEO4J_AUTH       # key bên trong Secret
+            # Ghìm bộ nhớ Neo4j lại cho nhẹ máy Mac 16GB (mặc định nó ăn nhiều):
+            - name: NEO4J_server_memory_heap_max__size
+              value: "512m"
+            - name: NEO4J_server_memory_pagecache_size
+              value: "256m"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: neo4j                 # tên DNS: user-service sẽ nối 'bolt://neo4j:7687'
+spec:
+  type: ClusterIP
+  selector:
+    app: neo4j
+  ports:
+    - { name: bolt,    port: 7687, targetPort: 7687 }
+    - { name: browser, port: 7474, targetPort: 7474 }
