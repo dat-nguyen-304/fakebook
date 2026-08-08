@@ -1,0 +1,53 @@
+# ============================================================================
+#  HorizontalPodAutoscaler for api-gateway.
+#
+#  Requires metrics-server (installed in kube-system, see
+#  metrics-server-kind-patch.yaml) to be serving metrics.k8s.io — otherwise the
+#  HPA reports <unknown> and never scales.
+#
+#  The HPA never creates pods itself: it only writes .spec.replicas on the
+#  Deployment below, and the usual Deployment -> ReplicaSet -> Pod chain does
+#  the rest. That is also why api-gateway.yaml no longer pins `replicas`.
+# ============================================================================
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api-gateway
+spec:
+  # Which workload to resize.
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api-gateway
+
+  minReplicas: 1
+  # Ceiling, not a target. api-gateway is the only HTTP entry point, so a bug or
+  # a flood must not be allowed to fill the single kind node with gateway pods.
+  maxReplicas: 5
+
+  metrics:
+    # Average CPU across all pods of the Deployment, expressed as a percentage
+    # of the container's resources.requests.cpu (50m here).
+    # 70% of 50m = 35m average -> above that, the HPA adds pods.
+    # NOTE: no memory metric on purpose. The Node.js heap grows and is not
+    # returned to the OS promptly, so memory-driven autoscaling scales up and
+    # never back down.
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+  behavior:
+    # scaleUp is left at its defaults (react immediately; at most double the pod
+    # count, or +4 pods, every 15s) — being slow to absorb a traffic spike is
+    # the expensive direction.
+    scaleDown:
+      # Default is 300s: the HPA looks back 5 minutes and uses the HIGHEST
+      # recommendation in that window, so it shrinks slowly and avoids flapping
+      # on bursty traffic. Shortened here so scale-down is observable during a
+      # learning session. Keep the default in production.
+      stabilizationWindowSeconds: 60
