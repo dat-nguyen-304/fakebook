@@ -1,0 +1,51 @@
+# ============================================================================
+#  Throwaway load generator used to watch the api-gateway HPA scale.
+#  NOT part of the app — apply it for a demo, delete it right after:
+#    kubectl apply -f k8s-playground/load-generator.yaml
+#    kubectl delete -f k8s-playground/load-generator.yaml
+#
+#  It hammers /api/health/ready (which pings Redis) so the gateway actually
+#  burns CPU instead of serving a static 200. Turn the pressure up or down with
+#  `kubectl scale deployment/load-generator --replicas=N`.
+# ============================================================================
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: load-generator
+  labels:
+    app: load-generator
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: load-generator
+  template:
+    metadata:
+      labels:
+        app: load-generator
+    spec:
+      containers:
+        - name: load
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              # 8 request loops per pod, in parallel. One serial loop spends most
+              # of its time waiting on the network and barely moves the needle.
+              for i in $(seq 1 8); do
+                while true; do
+                  wget -q -O /dev/null http://api-gateway:3000/api/health/ready || true
+                done &
+              done
+              wait
+          resources:
+            # Capped so the generator cannot starve the very pods it is meant to
+            # push. The node is a single kind container - both sides share it.
+            requests:
+              cpu: "50m"
+              memory: "16Mi"
+            limits:
+              cpu: "200m"
+              memory: "64Mi"

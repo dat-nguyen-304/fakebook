@@ -24,7 +24,9 @@ metadata:
   labels:
     app: api-gateway
 spec:
-  replicas: 1
+  # No 'replicas' here on purpose: the HPA in api-gateway-hpa.yaml owns this
+  # field. Keeping it would make every `kubectl apply` of this file reset the
+  # count, undoing whatever the HPA had scaled to.
   selector:
     matchLabels:
       app: api-gateway

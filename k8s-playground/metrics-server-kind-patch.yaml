@@ -1,0 +1,34 @@
+# ============================================================================
+#  Strategic-merge patch for the upstream metrics-server Deployment on kind.
+#
+#  Install order:
+#    1. kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/\
+#         releases/latest/download/components.yaml
+#    2. kubectl patch deployment metrics-server -n kube-system \
+#         --type=strategic --patch-file k8s-playground/metrics-server-kind-patch.yaml
+#
+#  Why the patch is needed: metrics-server scrapes each kubelet over HTTPS and
+#  verifies its serving certificate. kind's kubelets use self-signed certs that
+#  are not in the cluster CA bundle, so out of the box the pod never becomes
+#  ready ("x509: cannot validate certificate ... because it doesn't contain any
+#  IP SANs") and every HPA reports <unknown>.
+#
+#  --kubelet-insecure-tls skips that verification. Acceptable for a local
+#  learning cluster ONLY. The production fix is to give kubelets certs signed by
+#  the cluster CA (serverTLSBootstrap: true + an approver for the CSRs).
+# ============================================================================
+
+spec:
+  template:
+    spec:
+      containers:
+        - name: metrics-server
+          args:
+            # kubectl's strategic merge replaces the whole args list, so the
+            # upstream defaults have to be repeated here, not just the new flag.
+            - --cert-dir=/tmp
+            - --secure-port=10250
+            - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+            - --kubelet-use-node-status-port
+            - --metric-resolution=15s
+            - --kubelet-insecure-tls
